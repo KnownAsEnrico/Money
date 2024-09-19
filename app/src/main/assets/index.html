@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Einkommen und Ausgaben Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Einbindung von Google Charts -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+        /* Einbindung von Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f8;
+            color: #333;
+        }
+
+        header {
+            background-color: #4CAF50;
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 20px;
+            justify-content: center;
+        }
+
+        .list-container,
+        .chart-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex: 1 1 calc(50% - 40px);
+            max-width: calc(50% - 40px);
+        }
+
+        .list-container h2,
+        .chart-container h2 {
+            margin-top: 0;
+            color: #4CAF50;
+            font-size: 1.5em;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .item input[type="text"],
+        .item input[type="number"] {
+            padding: 10px;
+            margin: 5px 5px 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex: 1 1 100%;
+            box-sizing: border-box;
+        }
+
+        .item input[type="number"] {
+            max-width: 100%;
+        }
+
+        .item .remove-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            flex: 0 0 auto;
+            margin: 5px 0;
+        }
+
+        .item .remove-button:hover {
+            background-color: #e53935;
+        }
+
+        .add-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            font-size: 1em;
+        }
+
+        .add-button:hover {
+            background-color: #43A047;
+        }
+
+        .sum-block {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 10px;
+            flex: 1 1 100%;
+            box-sizing: border-box;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .sum-block p {
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+
+        .sum-block span {
+            font-weight: 500;
+            color: #4CAF50;
+        }
+
+        /* Neue CSS-Regel für die maximale Höhe der Diagramm-Boxen */
+        .chart-container {
+            max-height: 400px; /* Hier können Sie die gewünschte maximale Höhe einstellen */
+            overflow: hidden;
+        }
+
+        @media (max-width: 1024px) {
+            .list-container,
+            .chart-container {
+                flex: 1 1 calc(50% - 40px);
+                max-width: calc(50% - 40px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .list-container,
+            .chart-container {
+                flex: 1 1 100%;
+                max-width: 100%;
+                margin: 10px 0;
+            }
+
+            .add-button {
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                font-size: 16px;
+            }
+
+            .item input[type="text"],
+            .item input[type="number"],
+            .add-button,
+            .item .remove-button {
+                font-size: 1em;
+            }
+
+            .sum-block p {
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Einkommen und Ausgaben Tracker</h1>
+</header>
+
+<div class="container">
+    <div class="list-container" id="income-container">
+        <h2>Einkommen</h2>
+        <div id="income-list">
+            <!-- Einkommens-Einheiten werden hier hinzugefügt -->
+        </div>
+        <button class="add-button" onclick="addItem('income')">Neue Einnahme hinzufügen</button>
+    </div>
+
+    <div class="list-container" id="expense-container">
+        <h2>Ausgaben</h2>
+        <div id="expense-list">
+            <!-- Ausgaben-Einheiten werden hier hinzugefügt -->
+        </div>
+        <button class="add-button" onclick="addItem('expense')">Neue Ausgabe hinzufügen</button>
+    </div>
+
+    <!-- Bereich für die Diagramme -->
+    <div class="chart-container">
+        <h2>Einkommen - Diagramm</h2>
+        <div id="incomeChart" style="width: 100%; height: 100%;"></div>
+    </div>
+
+    <div class="chart-container">
+        <h2>Ausgaben - Diagramm</h2>
+        <div id="expenseChart" style="width: 100%; height: 100%;"></div>
+    </div>
+
+    <div class="sum-block">
+        <p>Netto-Einkommen: <span id="net-total">0.00</span> €</p>
+        <p>Verbleibendes Einkommen: <span id="percentage">0.00</span>%</p>
+    </div>
+</div>
+
+<script>
+    // Variable zum Tracking des Ladezustands
+    let isLoading = true;
+
+    // Laden der Google Charts-Bibliothek
+    google.charts.load('current', {'packages':['corechart']});
+
+    // Initialisierung der Diagramme
+    let incomeChart;
+    let expenseChart;
+
+    function updateCharts() {
+        drawIncomeChart();
+        drawExpenseChart();
+    }
+
+    function drawIncomeChart() {
+        const incomeItems = document.querySelectorAll('#income-list .item');
+        const dataArray = [['Name', 'Betrag']];
+
+        incomeItems.forEach(item => {
+            const name = item.querySelector('input[type="text"]').value || 'Unbenannt';
+            const amount = parseFloat(item.querySelector('input[type="number"]').value) || 0;
+            if (amount > 0) {
+                dataArray.push([name, amount]);
+            }
+        });
+
+        const data = google.visualization.arrayToDataTable(dataArray);
+
+        const options = {
+            pieHole: 0.4,
+            chartArea: {
+                width: '100%',
+                height: '80%'
+            },
+            legend: {
+                position: 'bottom'
+            }
+        };
+
+        incomeChart = new google.visualization.PieChart(document.getElementById('incomeChart'));
+        incomeChart.draw(data, options);
+    }
+
+    function drawExpenseChart() {
+        const expenseItems = document.querySelectorAll('#expense-list .item');
+        const dataArray = [['Name', 'Betrag']];
+
+        expenseItems.forEach(item => {
+            const name = item.querySelector('input[type="text"]').value || 'Unbenannt';
+            const amount = parseFloat(item.querySelector('input[type="number"]').value) || 0;
+            if (amount > 0) {
+                dataArray.push([name, amount]);
+            }
+        });
+
+        const data = google.visualization.arrayToDataTable(dataArray);
+
+        const options = {
+            pieHole: 0.4,
+            chartArea: {
+                width: '100%',
+                height: '80%'
+            },
+            legend: {
+                position: 'bottom'
+            }
+        };
+
+        expenseChart = new google.visualization.PieChart(document.getElementById('expenseChart'));
+        expenseChart.draw(data, options);
+    }
+
+    // Lädt die gespeicherten Daten beim Laden der Seite
+    window.onload = function() {
+        loadData('income');
+        loadData('expense');
+        calculateTotals();
+        google.charts.setOnLoadCallback(updateCharts);
+        isLoading = false; // Laden abgeschlossen
+    };
+
+    // Diagramme bei Größenänderung des Fensters neu zeichnen
+    window.onresize = function() {
+        updateCharts();
+    };
+
+    function addItem(type, name = '', amount = 0) {
+        const container = document.getElementById(`${type}-list`);
+
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'item';
+
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.placeholder = 'Name';
+        nameInput.value = name;
+        nameInput.oninput = () => {
+            if (!isLoading) {
+                saveData(type);
+            }
+            calculateTotals();
+            updateCharts();
+        };
+
+        const amountInput = document.createElement('input');
+        amountInput.type = 'number';
+        amountInput.placeholder = 'Betrag';
+        amountInput.value = amount;
+        amountInput.oninput = () => {
+            if (!isLoading) {
+                saveData(type);
+            }
+            calculateTotals();
+            updateCharts();
+        };
+
+        const removeButton = document.createElement('button');
+        removeButton.className = 'remove-button';
+        removeButton.innerText = 'Entfernen';
+        removeButton.onclick = () => {
+            container.removeChild(itemDiv);
+            saveData(type);
+            calculateTotals();
+            updateCharts();
+        };
+
+        itemDiv.appendChild(nameInput);
+        itemDiv.appendChild(amountInput);
+        itemDiv.appendChild(removeButton);
+        container.appendChild(itemDiv);
+
+        calculateTotals();
+        if (!isLoading) {
+            saveData(type);
+        }
+        updateCharts();
+    }
+
+    function calculateTotals() {
+        const incomeItems = document.querySelectorAll('#income-list .item');
+        const expenseItems = document.querySelectorAll('#expense-list .item');
+
+        let totalIncome = 0;
+        incomeItems.forEach(item => {
+            const amountInput = item.querySelector('input[type="number"]');
+            totalIncome += parseFloat(amountInput.value) || 0;
+        });
+
+        let totalExpenses = 0;
+        expenseItems.forEach(item => {
+            const amountInput = item.querySelector('input[type="number"]');
+            totalExpenses += parseFloat(amountInput.value) || 0;
+        });
+
+        const netTotal = totalIncome - totalExpenses;
+        document.getElementById('net-total').innerText = netTotal.toFixed(2);
+
+        const percentage = totalIncome ? (netTotal / totalIncome) * 100 : 0;
+        document.getElementById('percentage').innerText = percentage.toFixed(2);
+    }
+
+    function saveData(type) {
+        const items = [];
+        const itemElements = document.querySelectorAll(`#${type}-list .item`);
+
+        itemElements.forEach(item => {
+            const nameInput = item.querySelector('input[type="text"]');
+            const amountInput = item.querySelector('input[type="number"]');
+            items.push({
+                name: nameInput.value,
+                amount: amountInput.value
+            });
+        });
+
+        localStorage.setItem(`${type}Data`, JSON.stringify(items));
+    }
+
+    function loadData(type) {
+        const data = localStorage.getItem(`${type}Data`);
+        if (data) {
+            isLoading = true; // Ladevorgang beginnt
+            const items = JSON.parse(data);
+            items.forEach(item => {
+                addItem(type, item.name, item.amount);
+            });
+            isLoading = false; // Ladevorgang beendet
+        } else {
+            isLoading = false; // Kein Laden erforderlich
+        }
+    }
+
+</script>
+</body>
+</html>
