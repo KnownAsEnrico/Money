@@ -76,7 +76,7 @@ h1 {
     justify-content: center;
 }
 
-/* Card-Stile für Vermögen-Karten */
+/* Card-Stile für Vermögen-Karten und Diagramme */
 .card {
     background-color: white;
     border-radius: 15px;
@@ -110,6 +110,10 @@ h1 {
     color: #FFC107; /* Gelb für Vermögen nach diesem Monat */
 }
 
+.charts-card .card-header i {
+    color: #2196F3; /* Blau für Diagramme */
+}
+
 .card-body {
     display: flex;
     align-items: center;
@@ -141,6 +145,51 @@ h1 {
 
 .networth-after-card .card-body span.negative {
     color: #f44336; /* Rot für negative Werte */
+}
+
+/* Charts Card */
+.charts-card {
+    flex: 1 1 90%;
+    max-width: 90%;
+}
+
+.charts-body {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.chart-wrapper {
+    width: 48%;
+    margin-bottom: 20px;
+}
+
+.chart-wrapper h3 {
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+
+.chart {
+    width: 100%;
+    height: 300px;
+    position: relative;
+    border-radius: 12px;
+}
+
+/* Tooltip-Stil */
+.tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    font-size: 14px;
+    z-index: 10;
+    white-space: nowrap;
 }
 
 /* Styling für Listen-Container (Einkommen und Ausgaben) */
@@ -193,22 +242,73 @@ h1 {
     outline: none;
 }
 
-/* Styling für Entfernen-Buttons mit Icon */
+/* Styling für Entfernen-Buttons mit verbessertem Design */
 .item .remove-button {
-    background-color: transparent;
+    background-color: #f44336; /* Rotes Hintergrund für Ausgaben */
     border: none;
-    padding: 8px;
+    border-radius: 50%; /* Runde Form */
+    width: 40px;
+    height: 40px;
     cursor: pointer;
-    flex: 0 0 auto;
-    margin-left: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s;
+    transition: background-color 0.3s, transform 0.3s;
+    position: relative; /* Für das Tooltip */
+}
+
+.item .remove-button svg {
+    width: 20px;
+    height: 20px;
+    fill: white; /* Weißes Icon */
 }
 
 .item .remove-button:hover {
-    transform: scale(1.2);
+    background-color: #d32f2f; /* Dunkleres Rot beim Hover */
+    transform: scale(1.1); /* Leichte Vergrößerung beim Hover */
+}
+
+/* Tooltip-Stil für Entfernen-Buttons */
+.item .remove-button::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 110%; /* Position oberhalb des Buttons */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    padding: 5px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 1;
+}
+
+.item .remove-button:hover::after {
+    opacity: 1;
+}
+
+/* Optional: Pfeil unter dem Tooltip */
+.item .remove-button::before {
+    content: "";
+    position: absolute;
+    bottom: 100%; /* Position oberhalb des Buttons */
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent rgba(0, 0, 0, 0.75) transparent;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 1;
+}
+
+.item .remove-button:hover::before {
+    opacity: 1;
 }
 
 /* Styling für Hinzufügen-Buttons */
@@ -241,29 +341,24 @@ h1 {
     background-color: #e53935; /* Dunkleres Rot */
 }
 
-/* Styling für Networth Input */
-#networth-input {
-    display: flex;
-    flex-direction: column;
-}
-
-#networth-input input[type="number"] {
-    padding: 12px 16px;
-    margin-top: 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-sizing: border-box;
-    transition: border-color 0.3s, box-shadow 0.3s;
-    font-size: 1em;
-}
-
-#networth-input input[type="number"]:focus {
-    border-color: #4CAF50;
-    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-    outline: none;
-}
-
 /* Styling für Sum-Block Elemente */
+.sum-block {
+    background-color: white;
+    border-radius: 15px;
+    padding: 20px 25px;
+    margin: 15px;
+    box-sizing: border-box;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    flex: 1 1 90%;
+    max-width: 90%;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.sum-block:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
 .sum-block p {
     margin: 15px 0;
     font-size: 1.3em;
@@ -279,38 +374,53 @@ h1 {
     color: #f44336; /* Rot */
 }
 
-/* Charts */
-.chart {
-    width: 100%;
-    height: 300px;
-    position: relative;
-    border-radius: 12px;
+/* Styling für Networth After This Month Karte */
+.networth-after-card {
+    background-color: white;
+    border-radius: 15px;
+    padding: 20px 25px;
+    margin: 15px;
+    box-sizing: border-box;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    flex: 1 1 90%;
+    max-width: 90%;
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
-/* Tooltip-Stil */
-.tooltip {
-    position: absolute;
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 6px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out;
-    font-size: 14px;
-    z-index: 10;
-    white-space: nowrap;
+.networth-after-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
 }
 
-/* Responsives Design */
+.networth-after-card h2 {
+    margin-top: 0;
+    font-size: 1.6em;
+}
+
+.networth-after-card .card-body span {
+    font-size: 1.6em;
+    font-weight: bold;
+    color: #4CAF50; /* Grün für positive Werte */
+    transition: color 0.3s ease-in-out; /* Sanfter Übergang für Farbänderungen */
+}
+
+.networth-after-card .card-body span.negative {
+    color: #f44336; /* Rot für negative Werte */
+}
+
+/* Responsive Design für Charts */
 @media (max-width: 1024px) {
     .list-container,
-    .chart-container,
+    .charts-card,
     .sum-block,
     .networth-card,
     .networth-after-card {
         flex: 1 1 90%;
         max-width: 90%;
+    }
+
+    .chart-wrapper {
+        width: 100%;
     }
 }
 
@@ -325,7 +435,7 @@ h1 {
     }
 
     .list-container,
-    .chart-container,
+    .charts-card,
     .sum-block,
     .networth-card,
     .networth-after-card {
@@ -336,6 +446,10 @@ h1 {
 
     .add-button {
         font-size: 1em;
+    }
+
+    .chart-wrapper h3 {
+        font-size: 1.1em;
     }
 }
 
@@ -366,5 +480,14 @@ h1 {
 
     .networth-after-card .card-body span {
         font-size: 1.4em;
+    }
+
+    .charts-body {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .chart-wrapper {
+        width: 100%;
     }
 }

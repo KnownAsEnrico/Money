@@ -472,10 +472,11 @@ function addItem(type, name = '', amount = 0) {
     const removeButton = document.createElement('button');
     removeButton.className = 'remove-button';
     removeButton.setAttribute('aria-label', getTranslation('remove'));
+    removeButton.setAttribute('data-tooltip', 'Entfernen'); // Hinzufügen des Tooltip-Attributs
 
     // SVG-Icon für den Mülleimer
     removeButton.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="#f44336">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="#fff">
             <path d="M0 0h24v24H0V0z" fill="none"/>
             <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"/>
         </svg>
