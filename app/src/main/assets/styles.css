@@ -1,8 +1,3 @@
-/* Globale Box-Sizing-Regel */
-*, *::before, *::after {
-    box-sizing: border-box;
-}
-
 /* Allgemeine Stile */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -10,12 +5,11 @@ body {
     padding: 0;
     background-color: #f4f6f8;
     color: #333;
-    overflow-x: hidden; /* Verhindert horizontales Scrollen */
 }
 
 header {
     background-color: #4CAF50;
-    padding: 20px 20px; /* Reduziertes Padding */
+    padding: 20px 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -80,98 +74,123 @@ h1 {
     flex-wrap: wrap;
     margin: 20px;
     justify-content: center;
-    max-width: 100%;
-    overflow-x: hidden;
 }
 
-.list-container,
-.chart-container,
-.sum-block {
+/* Card-Stile für Vermögen-Karten */
+.card {
     background-color: white;
-    border-radius: 12px;
-    padding: 15px 20px; /* Reduziertes Padding */
-    margin: 10px; /* Reduziertes Margin */
+    border-radius: 15px;
+    padding: 20px 25px;
+    margin: 15px;
     box-sizing: border-box;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    flex: 1 1 100%; /* 100% Breite auf kleinen Bildschirmen */
-    max-width: 100%;
-    position: relative; /* Für die Tooltip-Positionierung */
-    transition: transform 0.2s;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    flex: 1 1 45%;
+    max-width: 45%;
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
-.chart {
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.card-header i {
+    font-size: 1.5em;
+    margin-right: 10px;
+    color: #4CAF50;
+}
+
+.networth-after-card .card-header i {
+    color: #FFC107; /* Gelb für Vermögen nach diesem Monat */
+}
+
+.card-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-body input[type="number"] {
     width: 100%;
-    max-width: 100%;
-    height: auto;
-    position: relative;
-    border-radius: 12px;
+    padding: 12px 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    font-size: 1em;
 }
 
-.sum-block p {
-    margin: 15px 0;
-    font-size: 1.3em;
+.card-body input[type="number"]:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+    outline: none;
 }
 
-.sum-block span {
-    font-weight: 600;
+.networth-after-card .card-body span {
+    font-size: 1.6em;
+    font-weight: bold;
     color: #4CAF50; /* Grün für positive Werte */
     transition: color 0.3s ease-in-out; /* Sanfter Übergang für Farbänderungen */
 }
 
-.sum-block .negative {
-    color: #f44336; /* Rot */
+.networth-after-card .card-body span.negative {
+    color: #f44336; /* Rot für negative Werte */
 }
 
-/* Responsives Design */
-@media (min-width: 769px) {
-    .list-container,
-    .chart-container,
-    .sum-block {
-        flex: 1 1 45%;
-        max-width: 45%;
-    }
+/* Styling für Listen-Container (Einkommen und Ausgaben) */
+.list-container {
+    background-color: white;
+    border-radius: 15px;
+    padding: 25px 30px;
+    margin: 15px;
+    box-sizing: border-box;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    flex: 1 1 45%;
+    max-width: 45%;
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
-@media (max-width: 768px) {
-    header {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 15px 10px; /* Weiter reduziertes Padding */
-    }
-
-    .language-toggle {
-        margin-top: 10px;
-    }
-
-    .list-container,
-    .chart-container,
-    .sum-block {
-        flex: 1 1 100%;
-        max-width: 100%;
-        margin: 10px 0;
-    }
-
-    .add-button {
-        font-size: 1em;
-    }
+.list-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
 }
 
-@media (max-width: 480px) {
-    body {
-        font-size: 16px;
-    }
+.list-container h2 {
+    margin-top: 0;
+    font-size: 1.6em;
+}
 
-    .item input[type="text"],
-    .item input[type="number"],
-    .add-button,
-    .item .remove-button,
-    #networth-input input[type="number"] {
-        font-size: 1em;
-    }
+/* Styling für einzelne Items */
+.item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
 
-    .sum-block p {
-        font-size: 1.1em;
-    }
+.item input[type="text"],
+.item input[type="number"] {
+    padding: 12px 16px;
+    margin: 5px 10px 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    flex: 1 1 45%;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    font-size: 1em;
+}
+
+.item input[type="text"]:focus,
+.item input[type="number"]:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+    outline: none;
 }
 
 /* Styling für Entfernen-Buttons mit Icon */
@@ -234,9 +253,8 @@ h1 {
     border: 1px solid #ccc;
     border-radius: 8px;
     box-sizing: border-box;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.3s, box-shadow 0.3s;
     font-size: 1em;
-    max-width: 100%; /* Sicherstellen, dass der Input nicht überbreitet */
 }
 
 #networth-input input[type="number"]:focus {
@@ -245,11 +263,26 @@ h1 {
     outline: none;
 }
 
+/* Styling für Sum-Block Elemente */
+.sum-block p {
+    margin: 15px 0;
+    font-size: 1.3em;
+}
+
+.sum-block span {
+    font-weight: 600;
+    color: #4CAF50; /* Grün für positive Werte */
+    transition: color 0.3s ease-in-out; /* Sanfter Übergang für Farbänderungen */
+}
+
+.sum-block .negative {
+    color: #f44336; /* Rot */
+}
+
 /* Charts */
 .chart {
     width: 100%;
-    max-width: 100%;
-    height: auto;
+    height: 300px;
     position: relative;
     border-radius: 12px;
 }
@@ -269,7 +302,69 @@ h1 {
     white-space: nowrap;
 }
 
-/* Weitere Anpassungen */
-.sum-block span#networth-after {
-    /* Kein zusätzliches Styling notwendig, da bereits durch .sum-block span gefärbt */
+/* Responsives Design */
+@media (max-width: 1024px) {
+    .list-container,
+    .chart-container,
+    .sum-block,
+    .networth-card,
+    .networth-after-card {
+        flex: 1 1 90%;
+        max-width: 90%;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .language-toggle {
+        margin-top: 10px;
+    }
+
+    .list-container,
+    .chart-container,
+    .sum-block,
+    .networth-card,
+    .networth-after-card {
+        flex: 1 1 100%;
+        max-width: 100%;
+        margin: 10px 0;
+    }
+
+    .add-button {
+        font-size: 1em;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 16px;
+    }
+
+    .item input[type="text"],
+    .item input[type="number"],
+    .add-button,
+    .item .remove-button,
+    #networth-input input[type="number"] {
+        font-size: 1em;
+    }
+
+    .sum-block p {
+        font-size: 1.1em;
+    }
+
+    .card-header h2 {
+        font-size: 1.3em;
+    }
+
+    .card-header i {
+        font-size: 1.2em;
+    }
+
+    .networth-after-card .card-body span {
+        font-size: 1.4em;
+    }
 }

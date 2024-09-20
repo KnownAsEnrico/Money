@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <title data-translate="app_title">Einkommen und Ausgaben Tracker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Link zur CSS-Datei -->
     <link rel="stylesheet" href="styles.css">
+    <!-- Font Awesome für Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
@@ -21,56 +24,69 @@
 </header>
 
 <div class="container">
-    <!-- Neue Networth Karte -->
-    <div class="list-container" id="networth-container">
-        <h2 data-translate="networth">Vermögen</h2>
-        <div id="networth-input">
+    <!-- Vermögen Eingabe -->
+    <div class="card networth-card" id="networth-container">
+        <div class="card-header">
+            <i class="fas fa-wallet"></i>
+            <h2 data-translate="networth">Vermögen</h2>
+        </div>
+        <div class="card-body">
             <input type="number" id="current-networth" placeholder="Aktuelles Vermögen eingeben" oninput="updateNetworth()">
         </div>
     </div>
 
+    <!-- Vermögen nach diesem Monat -->
+    <div class="card networth-after-card" id="networth-after-container">
+        <div class="card-header">
+            <i class="fas fa-chart-line"></i>
+            <h2 data-translate="networth_after">Vermögen nach diesem Monat</h2>
+        </div>
+        <div class="card-body">
+            <span id="networth-after">0.00 €</span>
+        </div>
+    </div>
+
+    <!-- Einkommen Liste -->
     <div class="list-container" id="income-container">
         <h2 data-translate="income">Einkommen</h2>
         <div id="income-list">
-            <!-- Einkommens-Einheiten werden hier hinzugefügt -->
+            <!-- Einkommens-Einträge werden hier hinzugefügt -->
         </div>
         <button class="add-button" onclick="addItem('income')" data-translate="add_income">Neue Einnahme hinzufügen</button>
     </div>
 
+    <!-- Ausgaben Liste -->
     <div class="list-container" id="expense-container">
         <h2 data-translate="expenses">Ausgaben</h2>
         <div id="expense-list">
-            <!-- Ausgaben-Einheiten werden hier hinzugefügt -->
+            <!-- Ausgaben-Einträge werden hier hinzugefügt -->
         </div>
         <button class="add-button" onclick="addItem('expense')" data-translate="add_expense">Neue Ausgabe hinzufügen</button>
     </div>
 
-    <!-- Bereich für die Diagramme -->
+    <!-- Diagramme Bereich -->
     <div class="chart-container">
         <h2 data-translate="income_chart">Einkommen - Diagramm</h2>
         <canvas id="incomeChart" class="chart"></canvas>
-        <!-- Tooltip innerhalb des Chart-Containers -->
+        <!-- Tooltip für Einkommen Diagramm -->
         <div class="tooltip" id="incomeTooltip"></div>
     </div>
 
     <div class="chart-container">
         <h2 data-translate="expense_chart">Ausgaben - Diagramm</h2>
         <canvas id="expenseChart" class="chart"></canvas>
-        <!-- Tooltip innerhalb des Chart-Containers -->
+        <!-- Tooltip für Ausgaben Diagramm -->
         <div class="tooltip" id="expenseTooltip"></div>
     </div>
 
+    <!-- Summen Bereich -->
     <div class="sum-block">
         <p><span data-translate="net_income">Netto-Einkommen:</span> <span id="net-total">0.00</span> €</p>
         <p><span data-translate="remaining_income">Verbleibendes Einkommen:</span> <span id="percentage">0.00</span>%</p>
     </div>
-
-    <!-- Neue Networth after this Month Karte -->
-    <div class="sum-block">
-        <p><span data-translate="networth_after">Vermögen nach diesem Monat:</span> <span id="networth-after">0.00</span></p>
-    </div>
 </div>
 
+<!-- Link zur JavaScript-Datei -->
 <script src="script.js"></script>
 </body>
 </html>
