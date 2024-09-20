@@ -42,6 +42,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             flex: 1 1 calc(50% - 40px);
             max-width: calc(50% - 40px);
+            position: relative; /* Für die Tooltip-Positionierung */
         }
 
         .list-container h2,
@@ -131,9 +132,9 @@
         }
 
         /* Tooltip-Stil */
-        #tooltip {
+        .tooltip {
             position: absolute;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.8);
             color: white;
             padding: 5px 10px;
             border-radius: 4px;
@@ -142,6 +143,7 @@
             transition: opacity 0.2s ease-in-out;
             font-size: 12px;
             z-index: 10;
+            white-space: nowrap;
         }
 
         @media (max-width: 768px) {
@@ -206,11 +208,15 @@
     <div class="chart-container">
         <h2>Einkommen - Diagramm</h2>
         <canvas id="incomeChart" class="chart"></canvas>
+        <!-- Tooltip innerhalb des Chart-Containers -->
+        <div class="tooltip" id="incomeTooltip"></div>
     </div>
 
     <div class="chart-container">
         <h2>Ausgaben - Diagramm</h2>
         <canvas id="expenseChart" class="chart"></canvas>
+        <!-- Tooltip innerhalb des Chart-Containers -->
+        <div class="tooltip" id="expenseTooltip"></div>
     </div>
 
     <div class="sum-block">
@@ -218,9 +224,6 @@
         <p>Verbleibendes Einkommen: <span id="percentage">0.00</span>%</p>
     </div>
 </div>
-
-<!-- Tooltip für Diagramme -->
-<div id="tooltip"></div>
 
 <script>
     // Variable zum Tracking des Ladezustands
@@ -241,7 +244,7 @@
         const items = document.querySelectorAll(`#${type}-list .item`);
         const data = [];
         items.forEach(item => {
-            const name = item.querySelector('input[type="text"]').value || 'Unbenannt';
+            const name = item.querySelector('input[type="text"]').value.trim() || 'Unbenannt';
             const amount = parseFloat(item.querySelector('input[type="number"]').value) || 0;
             if (amount > 0) {
                 data.push({ name, amount });
@@ -266,7 +269,7 @@
         // Farben für die Segmente
         const colors = generateColors(data.length);
 
-        // Speicher der Segmente mit ihren Winkelbereichen
+        // Speicher der Segmente mit ihren Winkelbereichen und Prozentanteil
         const segments = [];
 
         // Zeichne den Hintergrund
@@ -280,7 +283,6 @@
             ctx.fillStyle = '#000';
             ctx.textAlign = 'center';
             ctx.fillText('Keine Daten verfügbar', rect.width / 2, rect.height / 2);
-            // Leere die chartData für diesen Typ
             chartData[type] = [];
             return;
         }
@@ -294,6 +296,7 @@
 
         data.forEach((item, index) => {
             const sliceAngle = (item.amount / total) * 2 * Math.PI;
+            const percentage = ((item.amount / total) * 100).toFixed(1);
 
             // Zeichne das Segment
             ctx.beginPath();
@@ -303,11 +306,12 @@
             ctx.fillStyle = colors[index];
             ctx.fill();
 
-            // Speichere das Segment mit seinen Winkeln und Namen
+            // Speichere das Segment mit seinen Winkeln, Namen und Prozentanteil
             segments.push({
                 startAngle: startAngle,
                 endAngle: startAngle + sliceAngle,
-                name: item.name
+                name: item.name,
+                percentage: percentage
             });
 
             startAngle += sliceAngle;
@@ -317,14 +321,25 @@
         chartData[type] = segments;
     }
 
-    // Funktion zur Generierung von Farben für die Segmente
+    // Funktion zur Generierung von Farben für die Segmente (ursprüngliche Farbpalette)
     function generateColors(numColors) {
         const colors = [];
         const baseColors = [
-            '#4CAF50', '#FF9800', '#F44336', '#2196F3',
-            '#9C27B0', '#00BCD4', '#8BC34A', '#FFC107',
-            '#E91E63', '#3F51B5', '#FF5722', '#795548',
-            '#607D8B', '#673AB7', '#009688'
+            '#4CAF50', // Grün
+            '#FF9800', // Orange
+            '#F44336', // Rot
+            '#2196F3', // Blau
+            '#9C27B0', // Lila
+            '#00BCD4', // Türkis
+            '#8BC34A', // Hellgrün
+            '#FFC107', // Gelb
+            '#E91E63', // Pink
+            '#3F51B5', // Indigo
+            '#FF5722', // Tieforange
+            '#795548', // Braun
+            '#607D8B', // Blaugrau
+            '#673AB7', // Dunkelviolett
+            '#009688'  // Teal
         ];
 
         for (let i = 0; i < numColors; i++) {
@@ -335,8 +350,6 @@
 
     // Event-Handling für Diagramm-Interaktivität
     function setupInteractivity() {
-        const tooltip = document.getElementById('tooltip');
-
         // Funktion zur Bestimmung des Segments basierend auf der Position
         function getSegment(canvas, x, y, type) {
             const rect = canvas.getBoundingClientRect();
@@ -366,55 +379,68 @@
             const segments = chartData[type];
             for (let segment of segments) {
                 if (angle >= segment.startAngle && angle < segment.endAngle) {
-                    return segment.name;
+                    return segment;
                 }
             }
             return null;
         }
 
         // Funktion zur Anzeige des Tooltips
-        function showTooltip(text, x, y) {
-            tooltip.style.left = x + 'px';
-            tooltip.style.top = y + 'px';
-            tooltip.innerText = text;
-            tooltip.style.opacity = 1;
+        function showTooltip(tooltipElement, text, percentage, x, y) {
+            tooltipElement.style.left = x + 'px';
+            tooltipElement.style.top = y + 'px';
+            tooltipElement.innerText = `${text}: ${percentage}%`;
+            tooltipElement.style.opacity = 1;
         }
 
         // Funktion zur Verbergung des Tooltips
-        function hideTooltip() {
-            tooltip.style.opacity = 0;
+        function hideTooltip(tooltipElement) {
+            tooltipElement.style.opacity = 0;
         }
 
         // Füge Event-Listener zu beiden Diagrammen hinzu
         ['income', 'expense'].forEach(type => {
             const canvasId = `${type}Chart`;
             const canvas = document.getElementById(canvasId);
+            const tooltipId = `${type}Tooltip`;
+            const tooltip = document.getElementById(tooltipId);
 
             canvas.addEventListener('mousemove', function(event) {
-                const name = getSegment(canvas, event.clientX, event.clientY, type);
-                if (name) {
-                    showTooltip(name, event.clientX + 10, event.clientY + 10);
+                const nameAndPercentage = getSegment(canvas, event.clientX, event.clientY, type);
+                if (nameAndPercentage) {
+                    // Berechne die Position relativ zum Chart-Container
+                    const rect = canvas.getBoundingClientRect();
+                    const x = event.clientX - rect.left + 10;
+                    const y = event.clientY - rect.top + 10;
+                    showTooltip(tooltip, nameAndPercentage.name, nameAndPercentage.percentage, x, y);
                 } else {
-                    hideTooltip();
+                    hideTooltip(tooltip);
                 }
             });
 
-            canvas.addEventListener('mouseout', hideTooltip);
-
-            // Klick-Event wird entfernt, da keine Alerts genutzt werden sollen
+            canvas.addEventListener('mouseout', function() {
+                hideTooltip(tooltip);
+            });
 
             // Touch-Events für mobile Geräte
             canvas.addEventListener('touchmove', function(event) {
+                event.preventDefault(); // Verhindert Scrollen beim Tippen auf das Canvas
                 const touch = event.touches[0];
-                const name = getSegment(canvas, touch.clientX, touch.clientY, type);
-                if (name) {
-                    showTooltip(name, touch.clientX + 10, touch.clientY + 10);
+                const nameAndPercentage = getSegment(canvas, touch.clientX, touch.clientY, type);
+                if (nameAndPercentage) {
+                    // Berechne die Position relativ zum Chart-Container
+                    const rect = canvas.getBoundingClientRect();
+                    const x = touch.clientX - rect.left + 10;
+                    const y = touch.clientY - rect.top + 10;
+                    showTooltip(tooltip, nameAndPercentage.name, nameAndPercentage.percentage, x, y);
                 } else {
-                    hideTooltip();
+                    hideTooltip(tooltip);
                 }
             });
 
-            canvas.addEventListener('touchend', hideTooltip);
+            canvas.addEventListener('touchend', function() {
+                hideTooltip(tooltip);
+            });
         });
     }
 
