@@ -4,14 +4,9 @@
     <meta charset="UTF-8">
     <title>Einkommen und Ausgaben Tracker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Einbindung von Google Charts -->
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <style>
-        /* Einbindung von Google Fonts */
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
-
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f4f6f8;
@@ -129,18 +124,24 @@
             color: #4CAF50;
         }
 
-        /* Neue CSS-Regel für die maximale Höhe der Diagramm-Boxen */
-        .chart-container {
-            max-height: 400px; /* Hier können Sie die gewünschte maximale Höhe einstellen */
-            overflow: hidden;
+        .chart {
+            width: 100%;
+            height: 300px;
+            position: relative;
         }
 
-        @media (max-width: 1024px) {
-            .list-container,
-            .chart-container {
-                flex: 1 1 calc(50% - 40px);
-                max-width: calc(50% - 40px);
-            }
+        /* Tooltip-Stil */
+        #tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            font-size: 12px;
+            z-index: 10;
         }
 
         @media (max-width: 768px) {
@@ -204,12 +205,12 @@
     <!-- Bereich für die Diagramme -->
     <div class="chart-container">
         <h2>Einkommen - Diagramm</h2>
-        <div id="incomeChart" style="width: 100%; height: 100%;"></div>
+        <canvas id="incomeChart" class="chart"></canvas>
     </div>
 
     <div class="chart-container">
         <h2>Ausgaben - Diagramm</h2>
-        <div id="expenseChart" style="width: 100%; height: 100%;"></div>
+        <canvas id="expenseChart" class="chart"></canvas>
     </div>
 
     <div class="sum-block">
@@ -218,78 +219,203 @@
     </div>
 </div>
 
+<!-- Tooltip für Diagramme -->
+<div id="tooltip"></div>
+
 <script>
     // Variable zum Tracking des Ladezustands
     let isLoading = true;
 
-    // Laden der Google Charts-Bibliothek
-    google.charts.load('current', {'packages':['corechart']});
-
-    // Initialisierung der Diagramme
-    let incomeChart;
-    let expenseChart;
+    // Datenstruktur zum Speichern der Diagrammsegmente
+    let chartData = {
+        income: [],
+        expense: []
+    };
 
     function updateCharts() {
-        drawIncomeChart();
-        drawExpenseChart();
+        drawPieChart('incomeChart', getDataWithNames('income'), 'income');
+        drawPieChart('expenseChart', getDataWithNames('expense'), 'expense');
     }
 
-    function drawIncomeChart() {
-        const incomeItems = document.querySelectorAll('#income-list .item');
-        const dataArray = [['Name', 'Betrag']];
-
-        incomeItems.forEach(item => {
+    function getDataWithNames(type) {
+        const items = document.querySelectorAll(`#${type}-list .item`);
+        const data = [];
+        items.forEach(item => {
             const name = item.querySelector('input[type="text"]').value || 'Unbenannt';
             const amount = parseFloat(item.querySelector('input[type="number"]').value) || 0;
             if (amount > 0) {
-                dataArray.push([name, amount]);
+                data.push({ name, amount });
             }
         });
-
-        const data = google.visualization.arrayToDataTable(dataArray);
-
-        const options = {
-            pieHole: 0.4,
-            chartArea: {
-                width: '100%',
-                height: '80%'
-            },
-            legend: {
-                position: 'bottom'
-            }
-        };
-
-        incomeChart = new google.visualization.PieChart(document.getElementById('incomeChart'));
-        incomeChart.draw(data, options);
+        return data;
     }
 
-    function drawExpenseChart() {
-        const expenseItems = document.querySelectorAll('#expense-list .item');
-        const dataArray = [['Name', 'Betrag']];
+    function drawPieChart(canvasId, data, type) {
+        const canvas = document.getElementById(canvasId);
+        const ctx = canvas.getContext('2d');
 
-        expenseItems.forEach(item => {
-            const name = item.querySelector('input[type="text"]').value || 'Unbenannt';
-            const amount = parseFloat(item.querySelector('input[type="number"]').value) || 0;
-            if (amount > 0) {
-                dataArray.push([name, amount]);
-            }
+        // Anpassung für hohe Auflösung
+        const devicePixelRatio = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * devicePixelRatio;
+        canvas.height = rect.height * devicePixelRatio;
+        ctx.scale(devicePixelRatio, devicePixelRatio);
+
+        const total = data.reduce((acc, val) => acc + val.amount, 0);
+
+        // Farben für die Segmente
+        const colors = generateColors(data.length);
+
+        // Speicher der Segmente mit ihren Winkelbereichen
+        const segments = [];
+
+        // Zeichne den Hintergrund
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#f4f6f8';
+        ctx.fillRect(0, 0, rect.width, rect.height);
+
+        // Wenn keine Daten vorhanden sind
+        if (data.length === 0 || total === 0) {
+            ctx.font = '16px Arial';
+            ctx.fillStyle = '#000';
+            ctx.textAlign = 'center';
+            ctx.fillText('Keine Daten verfügbar', rect.width / 2, rect.height / 2);
+            // Leere die chartData für diesen Typ
+            chartData[type] = [];
+            return;
+        }
+
+        // Mittelpunkt und Radius
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const radius = Math.min(centerX, centerY) - 20;
+
+        let startAngle = 0;
+
+        data.forEach((item, index) => {
+            const sliceAngle = (item.amount / total) * 2 * Math.PI;
+
+            // Zeichne das Segment
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+            ctx.closePath();
+            ctx.fillStyle = colors[index];
+            ctx.fill();
+
+            // Speichere das Segment mit seinen Winkeln und Namen
+            segments.push({
+                startAngle: startAngle,
+                endAngle: startAngle + sliceAngle,
+                name: item.name
+            });
+
+            startAngle += sliceAngle;
         });
 
-        const data = google.visualization.arrayToDataTable(dataArray);
+        // Speichere die Segmentdaten für die Interaktivität
+        chartData[type] = segments;
+    }
 
-        const options = {
-            pieHole: 0.4,
-            chartArea: {
-                width: '100%',
-                height: '80%'
-            },
-            legend: {
-                position: 'bottom'
+    // Funktion zur Generierung von Farben für die Segmente
+    function generateColors(numColors) {
+        const colors = [];
+        const baseColors = [
+            '#4CAF50', '#FF9800', '#F44336', '#2196F3',
+            '#9C27B0', '#00BCD4', '#8BC34A', '#FFC107',
+            '#E91E63', '#3F51B5', '#FF5722', '#795548',
+            '#607D8B', '#673AB7', '#009688'
+        ];
+
+        for (let i = 0; i < numColors; i++) {
+            colors.push(baseColors[i % baseColors.length]);
+        }
+        return colors;
+    }
+
+    // Event-Handling für Diagramm-Interaktivität
+    function setupInteractivity() {
+        const tooltip = document.getElementById('tooltip');
+
+        // Funktion zur Bestimmung des Segments basierend auf der Position
+        function getSegment(canvas, x, y, type) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const devicePixelRatio = window.devicePixelRatio || 1;
+
+            // Korrigiere die Koordinaten basierend auf dem devicePixelRatio
+            const mouseX = (x - rect.left) * scaleX / devicePixelRatio;
+            const mouseY = (y - rect.top) * scaleY / devicePixelRatio;
+
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const radius = Math.min(centerX, centerY) - 20;
+
+            const dx = mouseX - centerX;
+            const dy = mouseY - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > radius) {
+                return null;
             }
-        };
 
-        expenseChart = new google.visualization.PieChart(document.getElementById('expenseChart'));
-        expenseChart.draw(data, options);
+            let angle = Math.atan2(dy, dx);
+            if (angle < 0) angle += 2 * Math.PI;
+
+            const segments = chartData[type];
+            for (let segment of segments) {
+                if (angle >= segment.startAngle && angle < segment.endAngle) {
+                    return segment.name;
+                }
+            }
+            return null;
+        }
+
+        // Funktion zur Anzeige des Tooltips
+        function showTooltip(text, x, y) {
+            tooltip.style.left = x + 'px';
+            tooltip.style.top = y + 'px';
+            tooltip.innerText = text;
+            tooltip.style.opacity = 1;
+        }
+
+        // Funktion zur Verbergung des Tooltips
+        function hideTooltip() {
+            tooltip.style.opacity = 0;
+        }
+
+        // Füge Event-Listener zu beiden Diagrammen hinzu
+        ['income', 'expense'].forEach(type => {
+            const canvasId = `${type}Chart`;
+            const canvas = document.getElementById(canvasId);
+
+            canvas.addEventListener('mousemove', function(event) {
+                const name = getSegment(canvas, event.clientX, event.clientY, type);
+                if (name) {
+                    showTooltip(name, event.clientX + 10, event.clientY + 10);
+                } else {
+                    hideTooltip();
+                }
+            });
+
+            canvas.addEventListener('mouseout', hideTooltip);
+
+            // Klick-Event wird entfernt, da keine Alerts genutzt werden sollen
+
+            // Touch-Events für mobile Geräte
+            canvas.addEventListener('touchmove', function(event) {
+                const touch = event.touches[0];
+                const name = getSegment(canvas, touch.clientX, touch.clientY, type);
+                if (name) {
+                    showTooltip(name, touch.clientX + 10, touch.clientY + 10);
+                } else {
+                    hideTooltip();
+                }
+            });
+
+            canvas.addEventListener('touchend', hideTooltip);
+        });
     }
 
     // Lädt die gespeicherten Daten beim Laden der Seite
@@ -297,7 +423,8 @@
         loadData('income');
         loadData('expense');
         calculateTotals();
-        google.charts.setOnLoadCallback(updateCharts);
+        updateCharts();
+        setupInteractivity();
         isLoading = false; // Laden abgeschlossen
     };
 
@@ -410,7 +537,6 @@
             isLoading = false; // Kein Laden erforderlich
         }
     }
-
 </script>
 </body>
 </html>
