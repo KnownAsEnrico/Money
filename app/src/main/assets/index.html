@@ -45,10 +45,19 @@
             position: relative; /* Für die Tooltip-Positionierung */
         }
 
+        /* Styling für den Einkommensbereich */
+        #income-container h2 {
+            color: #4CAF50; /* Grün */
+        }
+
+        /* Styling für den Ausgabenbereich */
+        #expense-container h2 {
+            color: #F44336; /* Rot */
+        }
+
         .list-container h2,
         .chart-container h2 {
             margin-top: 0;
-            color: #4CAF50;
             font-size: 1.5em;
         }
 
@@ -73,21 +82,25 @@
             max-width: 100%;
         }
 
+        /* Styling für Entfernen-Buttons mit Icon */
         .item .remove-button {
-            background-color: #f44336;
-            color: white;
+            background-color: transparent;
             border: none;
-            padding: 10px;
-            border-radius: 4px;
+            padding: 5px;
             cursor: pointer;
             flex: 0 0 auto;
             margin: 5px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
         }
 
         .item .remove-button:hover {
-            background-color: #e53935;
+            transform: scale(1.2);
         }
 
+        /* Styling für Hinzufügen-Buttons */
         .add-button {
             background-color: #4CAF50;
             color: white;
@@ -98,10 +111,19 @@
             margin-top: 10px;
             width: 100%;
             font-size: 1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
         }
 
-        .add-button:hover {
-            background-color: #43A047;
+        /* Spezifisches Styling für Ausgaben-Hinzufügen-Button */
+        #expense-container .add-button {
+            background-color: #F44336; /* Rot */
+        }
+
+        #expense-container .add-button:hover {
+            background-color: #e53935; /* Dunkleres Rot */
         }
 
         .sum-block {
@@ -122,7 +144,12 @@
 
         .sum-block span {
             font-weight: 500;
-            color: #4CAF50;
+            color: #4CAF50; /* Grün für positive Werte */
+        }
+
+        /* Neue CSS-Klasse für negative Werte */
+        .sum-block .negative {
+            color: #f44336; /* Rot */
         }
 
         .chart {
@@ -146,6 +173,7 @@
             white-space: nowrap;
         }
 
+        /* Responsives Design */
         @media (max-width: 768px) {
             h1 {
                 font-size: 1.5em;
@@ -267,7 +295,7 @@
         const total = data.reduce((acc, val) => acc + val.amount, 0);
 
         // Farben für die Segmente
-        const colors = generateColors(data.length);
+        const colors = generateColors(data.length, type);
 
         // Speicher der Segmente mit ihren Winkelbereichen und Prozentanteil
         const segments = [];
@@ -321,26 +349,42 @@
         chartData[type] = segments;
     }
 
-    // Funktion zur Generierung von Farben für die Segmente (ursprüngliche Farbpalette)
-    function generateColors(numColors) {
+    // Funktion zur Generierung von Farben für die Segmente (unterscheidet zwischen Einkommen und Ausgaben)
+    function generateColors(numColors, type) {
         const colors = [];
-        const baseColors = [
-            '#4CAF50', // Grün
-            '#FF9800', // Orange
-            '#F44336', // Rot
-            '#2196F3', // Blau
-            '#9C27B0', // Lila
-            '#00BCD4', // Türkis
-            '#8BC34A', // Hellgrün
-            '#FFC107', // Gelb
-            '#E91E63', // Pink
-            '#3F51B5', // Indigo
-            '#FF5722', // Tieforange
-            '#795548', // Braun
-            '#607D8B', // Blaugrau
-            '#673AB7', // Dunkelviolett
-            '#009688'  // Teal
-        ];
+        let baseColors;
+
+        if (type === 'income') {
+            // Farben für Einkommen (grünbasierte Palette)
+            baseColors = [
+                '#4CAF50', // Grün
+                '#81C784', // Hellgrün
+                '#388E3C', // Dunkelgrün
+                '#66BB6A', // Mittelgrün
+                '#A5D6A7', // Pastellgrün
+                '#2E7D32'  // Sehr Dunkelgrün
+            ];
+        } else if (type === 'expense') {
+            // Farben für Ausgaben (rotbasierte Palette)
+            baseColors = [
+                '#F44336', // Rot
+                '#E57373', // Hellrot
+                '#D32F2F', // Dunkelrot
+                '#EF5350', // Mittelrot
+                '#FF8A80', // Pastellrot
+                '#C62828'  // Sehr Dunkelrot
+            ];
+        } else {
+            // Fallback-Farben (blau)
+            baseColors = [
+                '#2196F3',
+                '#64B5F6',
+                '#1976D2',
+                '#42A5F5',
+                '#90CAF9',
+                '#1565C0'
+            ];
+        }
 
         for (let i = 0; i < numColors; i++) {
             colors.push(baseColors[i % baseColors.length]);
@@ -405,6 +449,7 @@
             const tooltipId = `${type}Tooltip`;
             const tooltip = document.getElementById(tooltipId);
 
+            // Mouse Events
             canvas.addEventListener('mousemove', function(event) {
                 const nameAndPercentage = getSegment(canvas, event.clientX, event.clientY, type);
                 if (nameAndPercentage) {
@@ -422,12 +467,17 @@
                 hideTooltip(tooltip);
             });
 
-            // Touch-Events für mobile Geräte
+            // Touch Events
+            canvas.addEventListener('touchstart', function(event) {
+                // Kein preventDefault hier, um Scrollen zu erlauben
+            }, { passive: true });
+
             canvas.addEventListener('touchmove', function(event) {
-                event.preventDefault(); // Verhindert Scrollen beim Tippen auf das Canvas
                 const touch = event.touches[0];
                 const nameAndPercentage = getSegment(canvas, touch.clientX, touch.clientY, type);
                 if (nameAndPercentage) {
+                    // Verhindere das Scrollen nur, wenn der Benutzer interagiert
+                    event.preventDefault();
                     // Berechne die Position relativ zum Chart-Container
                     const rect = canvas.getBoundingClientRect();
                     const x = touch.clientX - rect.left + 10;
@@ -436,7 +486,7 @@
                 } else {
                     hideTooltip(tooltip);
                 }
-            });
+            }, { passive: false });
 
             canvas.addEventListener('touchend', function() {
                 hideTooltip(tooltip);
@@ -489,9 +539,18 @@
             updateCharts();
         };
 
+        // Ersetzen des "Entfernen" Textes durch ein SVG-Mülleimer-Icon
         const removeButton = document.createElement('button');
         removeButton.className = 'remove-button';
-        removeButton.innerText = 'Entfernen';
+        removeButton.setAttribute('aria-label', 'Entfernen');
+
+        // SVG-Icon für den Mülleimer
+        removeButton.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="#f44336">
+                <path d="M0 0h24v24H0V0z" fill="none"/>
+                <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"/>
+            </svg>
+        `;
         removeButton.onclick = () => {
             container.removeChild(itemDiv);
             saveData(type);
@@ -528,10 +587,27 @@
         });
 
         const netTotal = totalIncome - totalExpenses;
-        document.getElementById('net-total').innerText = netTotal.toFixed(2);
+        const netTotalElement = document.getElementById('net-total');
+        netTotalElement.innerText = netTotal.toFixed(2);
 
+        // Hinzufügen oder Entfernen der Klasse 'negative' für Netto-Einkommen
+        if (netTotal < 0) {
+            netTotalElement.classList.add('negative');
+        } else {
+            netTotalElement.classList.remove('negative');
+        }
+
+        // Prozentzahl berechnen und anzeigen
         const percentage = totalIncome ? (netTotal / totalIncome) * 100 : 0;
-        document.getElementById('percentage').innerText = percentage.toFixed(2);
+        const percentageElement = document.getElementById('percentage');
+        percentageElement.innerText = percentage.toFixed(2);
+
+        // Hinzufügen oder Entfernen der Klasse 'negative' für die Prozentzahl
+        if (percentage < 0) {
+            percentageElement.classList.add('negative');
+        } else {
+            percentageElement.classList.remove('negative');
+        }
     }
 
     function saveData(type) {
