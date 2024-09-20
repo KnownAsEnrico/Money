@@ -1,4 +1,4 @@
-package com.ccp.money.ui.theme
+package com.zhan.money.ui.theme
 
 import android.app.Activity
 import android.os.Build

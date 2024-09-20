@@ -1,4 +1,4 @@
-package com.ccp.money.ui.theme
+package com.zhan.money.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

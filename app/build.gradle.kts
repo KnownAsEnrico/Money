@@ -4,15 +4,15 @@ plugins {
 }
 
 android {
-    namespace = "com.ccp.money"
+    namespace = "com.zhan.money"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.ccp.money"
+        applicationId = "com.zhan.money"
         minSdk = 31
         targetSdk = 34
         versionCode = 1
-        versionName = "2.0"
+        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

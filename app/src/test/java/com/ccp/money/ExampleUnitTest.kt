@@ -1,4 +1,4 @@
-package com.ccp.money
+package com.zhan.money
 
 import org.junit.Test
 
