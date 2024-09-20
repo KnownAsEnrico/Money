@@ -12,10 +12,15 @@ const translations = {
         income_chart: "Einkommen - Diagramm",
         expense_chart: "Ausgaben - Diagramm",
         remove: "Entfernen",
-        name_placeholder: "Einkommensquelle",
-        amount_placeholder: "Einkommensbetrag",
+        name_placeholder_income: "Einkommensquelle",
+        amount_placeholder_income: "Einkommensbetrag",
+        name_placeholder_expense: "Ausgabenquelle",
+        amount_placeholder_expense: "Ausgabenbetrag",
         no_data: "Keine Daten verfügbar",
-        unnamed: "Unbenannt" // Hinzugefügt
+        unnamed: "Unbenannt",
+        networth: "Vermögen",
+        networth_placeholder: "Aktuelles Vermögen eingeben",
+        networth_after: "Vermögen nach diesem Monat:"
     },
     en: {
         app_title: "Income and Expenses Tracker",
@@ -29,10 +34,15 @@ const translations = {
         income_chart: "Income - Chart",
         expense_chart: "Expenses - Chart",
         remove: "Remove",
-        name_placeholder: "Income Source",
-        amount_placeholder: "Income Amount",
+        name_placeholder_income: "Income Source",
+        amount_placeholder_income: "Income Amount",
+        name_placeholder_expense: "Expense Source",
+        amount_placeholder_expense: "Expense Amount",
         no_data: "No data available",
-        unnamed: "Unnamed" // Hinzugefügt
+        unnamed: "Unnamed",
+        networth: "Networth",
+        networth_placeholder: "Enter your current networth",
+        networth_after: "Networth after this Month:"
     },
     zh: {
         app_title: "收入和支出跟踪器",
@@ -46,11 +56,25 @@ const translations = {
         income_chart: "收入 - 图表",
         expense_chart: "支出 - 图表",
         remove: "删除",
-        name_placeholder: "收入来源",
-        amount_placeholder: "收入金额",
+        name_placeholder_income: "收入来源",
+        amount_placeholder_income: "收入金额",
+        name_placeholder_expense: "支出来源",
+        amount_placeholder_expense: "支出金额",
         no_data: "暂无数据",
-        unnamed: "未命名" // Hinzugefügt
+        unnamed: "未命名",
+        networth: "净资产",
+        networth_placeholder: "输入您的当前净资产",
+        networth_after: "本月后净资产："
     }
+};
+
+// Variable zum Tracking des Ladezustands
+let isLoading = true;
+
+// Datenstruktur zum Speichern der Diagrammsegmente
+let chartData = {
+    income: [],
+    expense: []
 };
 
 // Funktion zum Übersetzen der UI
@@ -63,18 +87,33 @@ function translateUI(language) {
         }
     });
 
-    // Übersetze die Placeholder-Texte
+    // Übersetze die Placeholder-Texte für Einnahmen, Ausgaben und Networth
     document.querySelectorAll('input[type="text"]').forEach(input => {
-        const key = 'name_placeholder';
-        if (translations[language] && translations[language][key]) {
-            input.placeholder = translations[language][key];
+        const parentContainer = input.closest('.list-container');
+        const type = parentContainer.id.includes('income') ? 'income' : parentContainer.id.includes('expense') ? 'expense' : null;
+        if (type) {
+            const key = type === 'income' ? 'name_placeholder_income' : 'name_placeholder_expense';
+            if (translations[language] && translations[language][key]) {
+                input.placeholder = translations[language][key];
+            }
         }
     });
 
     document.querySelectorAll('input[type="number"]').forEach(input => {
-        const key = 'amount_placeholder';
-        if (translations[language] && translations[language][key]) {
-            input.placeholder = translations[language][key];
+        const parentContainer = input.closest('.list-container');
+        if (parentContainer) {
+            if (parentContainer.id === 'networth-container') {
+                const key = 'networth_placeholder';
+                if (translations[language] && translations[language][key]) {
+                    input.placeholder = translations[language][key];
+                }
+            } else {
+                const type = parentContainer.id.includes('income') ? 'income' : 'expense';
+                const key = type === 'income' ? 'amount_placeholder_income' : 'amount_placeholder_expense';
+                if (translations[language] && translations[language][key]) {
+                    input.placeholder = translations[language][key];
+                }
+            }
         }
     });
 
@@ -83,6 +122,15 @@ function translateUI(language) {
         const key = 'remove';
         if (translations[language] && translations[language][key]) {
             button.setAttribute('aria-label', translations[language][key]);
+        }
+    });
+
+    // Übersetze die Networth after this Month Titel
+    const networthAfterElements = document.querySelectorAll('[data-translate="networth_after"]');
+    networthAfterElements.forEach(element => {
+        const key = 'networth_after';
+        if (translations[language] && translations[language][key]) {
+            element.innerText = translations[language][key];
         }
     });
 }
@@ -113,6 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Laden der gespeicherten Daten
+    loadData('networth'); // Neu hinzugefügt
     loadData('income');
     loadData('expense');
     calculateTotals();
@@ -120,21 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setupInteractivity();
     isLoading = false; // Laden abgeschlossen
 });
-
-// Variable zum Tracking des Ladezustands
-let isLoading = true;
-
-// Datenstruktur zum Speichern der Diagrammsegmente
-let chartData = {
-    income: [],
-    expense: []
-};
-
-// Funktion zum Aktualisieren der Diagramme
-function updateCharts() {
-    drawPieChart('incomeChart', getDataWithNames('income'), 'income');
-    drawPieChart('expenseChart', getDataWithNames('expense'), 'expense');
-}
 
 // Funktion zum Abrufen der Daten mit Namen
 function getDataWithNames(type) {
@@ -372,16 +406,26 @@ function getTranslation(key) {
 
 // Lädt die gespeicherten Daten aus localStorage
 function loadData(type) {
-    const data = localStorage.getItem(`${type}Data`);
-    if (data) {
-        isLoading = true; // Ladevorgang beginnt
-        const items = JSON.parse(data);
-        items.forEach(item => {
-            addItem(type, item.name, item.amount);
-        });
-        isLoading = false; // Ladevorgang beendet
+    if (type === 'networth') {
+        const networthInput = document.getElementById('current-networth');
+        const savedNetworth = localStorage.getItem('networthData');
+        if (savedNetworth) {
+            networthInput.value = parseFloat(savedNetworth) || 0;
+        }
     } else {
-        isLoading = false; // Kein Laden erforderlich
+        const data = localStorage.getItem(`${type}Data`);
+        if (data) {
+            isLoading = true; // Ladevorgang beginnt
+            const items = JSON.parse(data);
+            items.forEach(item => {
+                addItem(type, item.name, item.amount);
+            });
+            isLoading = false; // Ladevorgang beendet
+        } else {
+            if (type !== 'networth') {
+                isLoading = false; // Kein Laden erforderlich
+            }
+        }
     }
 }
 
@@ -394,7 +438,11 @@ function addItem(type, name = '', amount = 0) {
 
     const nameInput = document.createElement('input');
     nameInput.type = 'text';
-    nameInput.placeholder = getTranslation('name_placeholder');
+    if (type === 'income') {
+        nameInput.placeholder = getTranslation('name_placeholder_income');
+    } else if (type === 'expense') {
+        nameInput.placeholder = getTranslation('name_placeholder_expense');
+    }
     nameInput.value = name;
     nameInput.oninput = () => {
         if (!isLoading) {
@@ -406,7 +454,11 @@ function addItem(type, name = '', amount = 0) {
 
     const amountInput = document.createElement('input');
     amountInput.type = 'number';
-    amountInput.placeholder = getTranslation('amount_placeholder');
+    if (type === 'income') {
+        amountInput.placeholder = getTranslation('amount_placeholder_income');
+    } else if (type === 'expense') {
+        amountInput.placeholder = getTranslation('amount_placeholder_expense');
+    }
     amountInput.value = amount;
     amountInput.oninput = () => {
         if (!isLoading) {
@@ -447,7 +499,7 @@ function addItem(type, name = '', amount = 0) {
     updateCharts();
 }
 
-// Funktion zur Berechnung der Gesamteinnahmen, -ausgaben und Netto-Einkommen
+// Funktion zur Berechnung der Gesamteinnahmen, -ausgaben, Netto-Einkommen und Networth after this Month
 function calculateTotals() {
     const incomeItems = document.querySelectorAll('#income-list .item');
     const expenseItems = document.querySelectorAll('#expense-list .item');
@@ -486,21 +538,61 @@ function calculateTotals() {
     } else {
         percentageElement.classList.remove('negative');
     }
+
+    // Berechnung für Networth after this Month
+    const currentNetworthInput = document.getElementById('current-networth');
+    const currentNetworth = parseFloat(currentNetworthInput.value) || 0;
+    const networthAfter = currentNetworth + netTotal;
+    const networthAfterElement = document.getElementById('networth-after');
+    networthAfterElement.innerText = networthAfter.toFixed(2) + ' €'; // Anpassung für Euro
+
+    // Farbe basierend auf dem Wert (nur CSS-Klassen verwenden)
+    if (networthAfter < 0) {
+        networthAfterElement.classList.add('negative');
+    } else {
+        networthAfterElement.classList.remove('negative');
+    }
+
+    // Speichere das aktuelle Networth in localStorage
+    localStorage.setItem('networthData', currentNetworth.toFixed(2));
 }
 
 // Funktion zum Speichern der Daten in localStorage
 function saveData(type) {
-    const items = [];
-    const itemElements = document.querySelectorAll(`#${type}-list .item`);
+    if (type === 'networth') {
+        const networthInput = document.getElementById('current-networth');
+        const networthValue = parseFloat(networthInput.value) || 0;
+        localStorage.setItem('networthData', networthValue.toFixed(2));
+    } else {
+        const items = [];
+        const itemElements = document.querySelectorAll(`#${type}-list .item`);
 
-    itemElements.forEach(item => {
-        const nameInput = item.querySelector('input[type="text"]');
-        const amountInput = item.querySelector('input[type="number"]');
-        items.push({
-            name: nameInput.value,
-            amount: amountInput.value
+        itemElements.forEach(item => {
+            const nameInput = item.querySelector('input[type="text"]');
+            const amountInput = item.querySelector('input[type="number"]');
+            items.push({
+                name: nameInput.value,
+                amount: amountInput.value
+            });
         });
-    });
 
-    localStorage.setItem(`${type}Data`, JSON.stringify(items));
+        localStorage.setItem(`${type}Data`, JSON.stringify(items));
+    }
+}
+
+// Funktion zur Aktualisierung des Networth (wird beim Input ausgelöst)
+function updateNetworth() {
+    if (!isLoading) {
+        calculateTotals();
+        // Speichere das aktuelle Networth sofort
+        const networthInput = document.getElementById('current-networth');
+        const networthValue = parseFloat(networthInput.value) || 0;
+        localStorage.setItem('networthData', networthValue.toFixed(2));
+    }
+}
+
+// Funktion zum Aktualisieren der Diagramme
+function updateCharts() {
+    drawPieChart('incomeChart', getDataWithNames('income'), 'income');
+    drawPieChart('expenseChart', getDataWithNames('expense'), 'expense');
 }

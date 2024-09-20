@@ -21,6 +21,14 @@
 </header>
 
 <div class="container">
+    <!-- Neue Networth Karte -->
+    <div class="list-container" id="networth-container">
+        <h2 data-translate="networth">Vermögen</h2>
+        <div id="networth-input">
+            <input type="number" id="current-networth" placeholder="Aktuelles Vermögen eingeben" oninput="updateNetworth()">
+        </div>
+    </div>
+
     <div class="list-container" id="income-container">
         <h2 data-translate="income">Einkommen</h2>
         <div id="income-list">
@@ -55,6 +63,11 @@
     <div class="sum-block">
         <p><span data-translate="net_income">Netto-Einkommen:</span> <span id="net-total">0.00</span> €</p>
         <p><span data-translate="remaining_income">Verbleibendes Einkommen:</span> <span id="percentage">0.00</span>%</p>
+    </div>
+
+    <!-- Neue Networth after this Month Karte -->
+    <div class="sum-block">
+        <p><span data-translate="networth_after">Vermögen nach diesem Monat:</span> <span id="networth-after">0.00</span></p>
     </div>
 </div>
 
