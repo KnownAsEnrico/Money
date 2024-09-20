@@ -1,0 +1,276 @@
+/* Allgemeine Stile */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f6f8;
+    color: #333;
+}
+
+header {
+    background-color: #4CAF50;
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h1 {
+    margin: 0;
+    font-size: 1.8em;
+}
+
+.language-toggle {
+    display: flex;
+    align-items: center;
+}
+
+.language-toggle label {
+    margin-right: 10px;
+    font-size: 1em;
+}
+
+/* Entferne den kleinen Pfeil vom Sprachselector */
+.language-toggle select {
+    /* Entferne die standardmäßige Erscheinung des Select-Elements */
+    -webkit-appearance: none; /* Für Chrome, Safari, Opera */
+    -moz-appearance: none;    /* Für Firefox */
+    appearance: none;         /* Standard */
+
+    /* Entferne das Pfeil-Icon, das als Hintergrundbild gesetzt wurde */
+    background-image: none;
+
+    /* Behalte die Hintergrundfarbe bei */
+    background-color: rgba(255, 255, 255, 0.2);
+
+    /* Anpassung des rechten Paddings */
+    padding: 8px 12px;
+    padding-right: 12px;
+
+    /* Entferne den Rahmen */
+    border: none;
+
+    /* Weitere Anpassungen */
+    color: white;
+    font-size: 1em;
+    cursor: pointer;
+    border-radius: 20px;
+    transition: background-color 0.3s;
+}
+
+.language-toggle select:focus {
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Container-Stile */
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 20px;
+    justify-content: center;
+}
+
+.list-container,
+.chart-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 25px 30px;
+    margin: 15px;
+    box-sizing: border-box;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    flex: 1 1 45%;
+    max-width: 45%;
+    position: relative; /* Für die Tooltip-Positionierung */
+    transition: transform 0.2s;
+}
+
+.list-container:hover,
+.chart-container:hover {
+    transform: translateY(-5px);
+}
+
+.list-container h2,
+.chart-container h2 {
+    margin-top: 0;
+    font-size: 1.6em;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.item input[type="text"],
+.item input[type="number"] {
+    padding: 12px 16px;
+    margin: 5px 10px 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    flex: 1 1 45%;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-size: 1em;
+}
+
+.item input[type="text"]:focus,
+.item input[type="number"]:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+    outline: none;
+}
+
+/* Styling für Entfernen-Buttons mit Icon */
+.item .remove-button {
+    background-color: transparent;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    flex: 0 0 auto;
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.item .remove-button:hover {
+    transform: scale(1.2);
+}
+
+/* Styling für Hinzufügen-Buttons */
+.add-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    margin-top: 15px;
+    width: 100%;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+.add-button:hover {
+    background-color: #45a049;
+}
+
+/* Spezifisches Styling für Ausgaben-Hinzufügen-Button */
+#expense-container .add-button {
+    background-color: #F44336; /* Rot */
+}
+
+#expense-container .add-button:hover {
+    background-color: #e53935; /* Dunkleres Rot */
+}
+
+.sum-block {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 25px 30px;
+    margin: 20px 15px;
+    flex: 1 1 90%;
+    box-sizing: border-box;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.sum-block:hover {
+    transform: translateY(-5px);
+}
+
+.sum-block p {
+    margin: 15px 0;
+    font-size: 1.3em;
+}
+
+.sum-block span {
+    font-weight: 600;
+    color: #4CAF50; /* Grün für positive Werte */
+}
+
+.sum-block .negative {
+    color: #f44336; /* Rot */
+}
+
+.chart {
+    width: 100%;
+    height: 300px;
+    position: relative;
+    border-radius: 12px;
+}
+
+/* Tooltip-Stil */
+.tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    font-size: 14px;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+/* Responsives Design */
+@media (max-width: 1024px) {
+    .list-container,
+    .chart-container {
+        flex: 1 1 90%;
+        max-width: 90%;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .language-toggle {
+        margin-top: 10px;
+    }
+
+    .list-container,
+    .chart-container {
+        flex: 1 1 100%;
+        max-width: 100%;
+        margin: 10px 0;
+    }
+
+    .add-button {
+        font-size: 1em;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 16px;
+    }
+
+    .item input[type="text"],
+    .item input[type="number"],
+    .add-button,
+    .item .remove-button {
+        font-size: 1em;
+    }
+
+    .sum-block p {
+        font-size: 1.1em;
+    }
+}
