@@ -24,7 +24,7 @@
 </header>
 
 <div class="container">
-    <!-- Vermögen Eingabe -->
+    <!-- Vermögen Eingabe (immer oben) -->
     <div class="card networth-card" id="networth-container">
         <div class="card-header">
             <i class="fas fa-wallet"></i>
@@ -39,18 +39,7 @@
     <div class="list-container" id="income-container">
         <h2 data-translate="income">Einkommen</h2>
         <div id="income-list">
-            <!-- Einkommens-Einträge werden hier hinzugefügt -->
-            <!-- Beispiel eines Income-Items -->
-            <div class="item">
-                <input type="text" placeholder="Einkommensquelle" value="Gehalt">
-                <input type="number" placeholder="Einkommensbetrag" value="3000">
-                <button class="remove-button" data-tooltip="Entfernen" aria-label="Entfernen">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="#fff">
-                        <path d="M0 0h24v24H0V0z" fill="none"/>
-                        <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"/>
-                    </svg>
-                </button>
-            </div>
+            <!-- Einkommens-Einträge werden hier dynamisch hinzugefügt -->
         </div>
         <button class="add-button" onclick="addItem('income')" data-translate="add_income">Neue Einnahme hinzufügen</button>
     </div>
@@ -59,35 +48,27 @@
     <div class="list-container" id="expense-container">
         <h2 data-translate="expenses">Ausgaben</h2>
         <div id="expense-list">
-            <!-- Ausgaben-Einträge werden hier hinzugefügt -->
-            <!-- Beispiel eines Expense-Items -->
-            <div class="item">
-                <input type="text" placeholder="Ausgabenquelle" value="Miete">
-                <input type="number" placeholder="Ausgabenbetrag" value="1200">
-                <button class="remove-button" data-tooltip="Entfernen" aria-label="Entfernen">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="#fff">
-                        <path d="M0 0h24v24H0V0z" fill="none"/>
-                        <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"/>
-                    </svg>
-                </button>
-            </div>
+            <!-- Ausgaben-Einträge werden hier dynamisch hinzugefügt -->
         </div>
         <button class="add-button" onclick="addItem('expense')" data-translate="add_expense">Neue Ausgabe hinzufügen</button>
     </div>
 
-    <!-- Diagramme Bereich in einer großen Karte -->
+    <!-- Diagramme Bereich in zwei separaten Karten -->
     <div class="card charts-card" id="charts-container">
         <div class="card-header">
             <i class="fas fa-chart-pie"></i>
-            <h2>Diagramme</h2>
+            <h2 data-translate="charts">Diagramme</h2>
         </div>
         <div class="charts-body">
+            <!-- Einkommen Diagramm -->
             <div class="chart-wrapper">
                 <h3 data-translate="income_chart">Einkommen - Diagramm</h3>
                 <canvas id="incomeChart" class="chart"></canvas>
                 <!-- Tooltip für Einkommen Diagramm -->
                 <div class="tooltip" id="incomeTooltip"></div>
             </div>
+
+            <!-- Ausgaben Diagramm -->
             <div class="chart-wrapper">
                 <h3 data-translate="expense_chart">Ausgaben - Diagramm</h3>
                 <canvas id="expenseChart" class="chart"></canvas>

@@ -37,25 +37,14 @@ h1 {
 
 /* Entferne den kleinen Pfeil vom Sprachselector */
 .language-toggle select {
-    /* Entferne die standardmäßige Erscheinung des Select-Elements */
-    -webkit-appearance: none; /* Für Chrome, Safari, Opera */
-    -moz-appearance: none;    /* Für Firefox */
-    appearance: none;         /* Standard */
-
-    /* Entferne das Pfeil-Icon, das als Hintergrundbild gesetzt wurde */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
     background-image: none;
-
-    /* Behalte die Hintergrundfarbe bei */
     background-color: rgba(255, 255, 255, 0.2);
-
-    /* Anpassung des rechten Paddings */
     padding: 8px 12px;
     padding-right: 12px;
-
-    /* Entferne den Rahmen */
     border: none;
-
-    /* Weitere Anpassungen */
     color: white;
     font-size: 1em;
     cursor: pointer;
@@ -107,11 +96,11 @@ h1 {
 }
 
 .networth-after-card .card-header i {
-    color: #FFC107; /* Gelb für Vermögen nach diesem Monat */
+    color: #FFC107;
 }
 
 .charts-card .card-header i {
-    color: #2196F3; /* Blau für Diagramme */
+    color: #2196F3;
 }
 
 .card-body {
@@ -139,20 +128,15 @@ h1 {
 .networth-after-card .card-body span {
     font-size: 1.6em;
     font-weight: bold;
-    color: #4CAF50; /* Grün für positive Werte */
-    transition: color 0.3s ease-in-out; /* Sanfter Übergang für Farbänderungen */
+    color: #4CAF50;
+    transition: color 0.3s ease-in-out;
 }
 
 .networth-after-card .card-body span.negative {
-    color: #f44336; /* Rot für negative Werte */
+    color: #f44336;
 }
 
-/* Charts Card */
-.charts-card {
-    flex: 1 1 90%;
-    max-width: 90%;
-}
-
+/* Diagramme */
 .charts-body {
     display: flex;
     flex-wrap: wrap;
@@ -160,14 +144,8 @@ h1 {
 }
 
 .chart-wrapper {
-    width: 48%;
+    width: 48%; /* Beide Diagramme nebeneinander */
     margin-bottom: 20px;
-}
-
-.chart-wrapper h3 {
-    text-align: center;
-    margin-bottom: 10px;
-    font-size: 1.2em;
 }
 
 .chart {
@@ -175,6 +153,13 @@ h1 {
     height: 300px;
     position: relative;
     border-radius: 12px;
+}
+
+/* Für kleinere Bildschirme - Diagramme übereinander anzeigen */
+@media (max-width: 768px) {
+    .chart-wrapper {
+        width: 100%; /* Volle Breite für kleine Bildschirme */
+    }
 }
 
 /* Tooltip-Stil */
@@ -244,9 +229,9 @@ h1 {
 
 /* Styling für Entfernen-Buttons mit verbessertem Design */
 .item .remove-button {
-    background-color: #f44336; /* Rotes Hintergrund für Ausgaben */
+    background-color: #f44336;
     border: none;
-    border-radius: 50%; /* Runde Form */
+    border-radius: 50%;
     width: 40px;
     height: 40px;
     cursor: pointer;
@@ -254,61 +239,18 @@ h1 {
     align-items: center;
     justify-content: center;
     transition: background-color 0.3s, transform 0.3s;
-    position: relative; /* Für das Tooltip */
+    position: relative;
 }
 
 .item .remove-button svg {
     width: 20px;
     height: 20px;
-    fill: white; /* Weißes Icon */
+    fill: white;
 }
 
 .item .remove-button:hover {
-    background-color: #d32f2f; /* Dunkleres Rot beim Hover */
-    transform: scale(1.1); /* Leichte Vergrößerung beim Hover */
-}
-
-/* Tooltip-Stil für Entfernen-Buttons */
-.item .remove-button::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 110%; /* Position oberhalb des Buttons */
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.75);
-    color: #fff;
-    padding: 5px 8px;
-    border-radius: 4px;
-    white-space: nowrap;
-    font-size: 12px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
-    z-index: 1;
-}
-
-.item .remove-button:hover::after {
-    opacity: 1;
-}
-
-/* Optional: Pfeil unter dem Tooltip */
-.item .remove-button::before {
-    content: "";
-    position: absolute;
-    bottom: 100%; /* Position oberhalb des Buttons */
-    left: 50%;
-    transform: translateX(-50%);
-    border-width: 5px;
-    border-style: solid;
-    border-color: transparent transparent rgba(0, 0, 0, 0.75) transparent;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
-    z-index: 1;
-}
-
-.item .remove-button:hover::before {
-    opacity: 1;
+    background-color: #d32f2f;
+    transform: scale(1.1);
 }
 
 /* Styling für Hinzufügen-Buttons */
@@ -334,11 +276,11 @@ h1 {
 
 /* Spezifisches Styling für Ausgaben-Hinzufügen-Button */
 #expense-container .add-button {
-    background-color: #F44336; /* Rot */
+    background-color: #F44336;
 }
 
 #expense-container .add-button:hover {
-    background-color: #e53935; /* Dunkleres Rot */
+    background-color: #e53935;
 }
 
 /* Styling für Sum-Block Elemente */
@@ -366,46 +308,19 @@ h1 {
 
 .sum-block span {
     font-weight: 600;
-    color: #4CAF50; /* Grün für positive Werte */
-    transition: color 0.3s ease-in-out; /* Sanfter Übergang für Farbänderungen */
+    color: #4CAF50;
+    transition: color 0.3s ease-in-out;
 }
 
 .sum-block .negative {
-    color: #f44336; /* Rot */
+    color: #f44336;
 }
 
-/* Styling für Networth After This Month Karte */
-.networth-after-card {
-    background-color: white;
-    border-radius: 15px;
-    padding: 20px 25px;
-    margin: 15px;
-    box-sizing: border-box;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-    flex: 1 1 90%;
-    max-width: 90%;
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.networth-after-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-}
-
-.networth-after-card h2 {
-    margin-top: 0;
-    font-size: 1.6em;
-}
-
-.networth-after-card .card-body span {
-    font-size: 1.6em;
-    font-weight: bold;
-    color: #4CAF50; /* Grün für positive Werte */
-    transition: color 0.3s ease-in-out; /* Sanfter Übergang für Farbänderungen */
-}
-
-.networth-after-card .card-body span.negative {
-    color: #f44336; /* Rot für negative Werte */
+/* Sicherstellen, dass die Vermögen-Karte immer ganz oben und mit gleicher Breite ist */
+.networth-card {
+    flex: 1 1 100%;
+    max-width: 45%;
+    margin: 0 auto 20px auto;
 }
 
 /* Responsive Design für Charts */
@@ -462,7 +377,7 @@ h1 {
     .item input[type="number"],
     .add-button,
     .item .remove-button,
-    #networth-input input[type="number"] {
+    #current-networth {
         font-size: 1em;
     }
 

@@ -20,7 +20,8 @@ const translations = {
         unnamed: "Unbenannt",
         networth: "Vermögen",
         networth_placeholder: "Aktuelles Vermögen eingeben",
-        networth_after: "Vermögen nach diesem Monat:"
+        networth_after: "Vermögen nach diesem Monat:",
+        charts: "Diagramme"
     },
     en: {
         app_title: "Income and Expenses Tracker",
@@ -42,7 +43,8 @@ const translations = {
         unnamed: "Unnamed",
         networth: "Networth",
         networth_placeholder: "Enter your current networth",
-        networth_after: "Networth after this Month:"
+        networth_after: "Networth after this Month:",
+        charts: "Charts"
     },
     zh: {
         app_title: "收入和支出跟踪器",
@@ -64,7 +66,8 @@ const translations = {
         unnamed: "未命名",
         networth: "净资产",
         networth_placeholder: "输入您的当前净资产",
-        networth_after: "本月后净资产："
+        networth_after: "本月后净资产：",
+        charts: "图表"
     }
 };
 
@@ -122,6 +125,7 @@ function translateUI(language) {
         const key = 'remove';
         if (translations[language] && translations[language][key]) {
             button.setAttribute('aria-label', translations[language][key]);
+            button.setAttribute('data-tooltip', translations[language][key]);
         }
     });
 
@@ -132,6 +136,21 @@ function translateUI(language) {
         if (translations[language] && translations[language][key]) {
             element.innerText = translations[language][key];
         }
+    });
+
+    // Übersetze die Diagramme Titel
+    const chartsTitleElements = document.querySelectorAll('[data-translate="charts"]');
+    chartsTitleElements.forEach(element => {
+        const key = 'charts';
+        if (translations[language] && translations[language][key]) {
+            element.innerText = translations[language][key];
+        }
+    });
+
+    // Aktualisiere die Tooltips dynamisch
+    document.querySelectorAll('.remove-button').forEach(button => {
+        const tooltipText = translations[language]['remove'] || 'Remove';
+        button.setAttribute('data-tooltip', tooltipText);
     });
 }
 
@@ -162,15 +181,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event Listener für Remove-Buttons via Event Delegation
     document.querySelector('.container').addEventListener('click', function(event) {
-        if (event.target.closest('.remove-button')) {
-            const button = event.target.closest('.remove-button');
-            const itemDiv = button.closest('.item');
+        const removeButton = event.target.closest('.remove-button');
+        if (removeButton) {
+            const itemDiv = removeButton.closest('.item');
             if (itemDiv) {
-                itemDiv.remove();
-                const type = button.closest('.list-container').id.includes('income') ? 'income' : 'expense';
-                saveData(type);
-                calculateTotals();
-                updateCharts();
+                const listContainer = removeButton.closest('.list-container');
+                if (listContainer) {
+                    const type = listContainer.id.includes('income') ? 'income' : 'expense';
+                    itemDiv.remove();
+                    saveData(type);
+                    calculateTotals();
+                    updateCharts();
+                } else {
+                    console.error('Remove button is not inside a list-container.');
+                }
             }
         }
     });
@@ -190,8 +214,10 @@ function getDataWithNames(type) {
     const items = document.querySelectorAll(`#${type}-list .item`);
     const data = [];
     items.forEach(item => {
-        const name = item.querySelector('input[type="text"]').value.trim() || getTranslation('unnamed');
-        const amount = parseFloat(item.querySelector('input[type="number"]').value) || 0;
+        const nameInput = item.querySelector('input[type="text"]');
+        const amountInput = item.querySelector('input[type="number"]');
+        const name = nameInput.value.trim() || getTranslation('unnamed');
+        const amount = parseFloat(amountInput.value) || 0;
         if (amount > 0) {
             data.push({ name, amount });
         }
@@ -437,9 +463,7 @@ function loadData(type) {
             });
             isLoading = false; // Ladevorgang beendet
         } else {
-            if (type !== 'networth') {
-                isLoading = false; // Kein Laden erforderlich
-            }
+            isLoading = false; // Kein Laden erforderlich
         }
     }
 }
@@ -486,7 +510,7 @@ function addItem(type, name = '', amount = 0) {
     // Erstellen des Remove-Buttons ohne inline onclick
     const removeButton = document.createElement('button');
     removeButton.className = 'remove-button';
-    removeButton.setAttribute('data-tooltip', 'Entfernen');
+    removeButton.setAttribute('data-tooltip', getTranslation('remove'));
     removeButton.setAttribute('aria-label', getTranslation('remove'));
 
     // SVG-Icon für den Mülleimer
