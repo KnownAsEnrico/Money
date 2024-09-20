@@ -160,6 +160,21 @@ document.addEventListener('DOMContentLoaded', () => {
         saveLanguage(selectedLanguage);
     });
 
+    // Event Listener für Remove-Buttons via Event Delegation
+    document.querySelector('.container').addEventListener('click', function(event) {
+        if (event.target.closest('.remove-button')) {
+            const button = event.target.closest('.remove-button');
+            const itemDiv = button.closest('.item');
+            if (itemDiv) {
+                itemDiv.remove();
+                const type = button.closest('.list-container').id.includes('income') ? 'income' : 'expense';
+                saveData(type);
+                calculateTotals();
+                updateCharts();
+            }
+        }
+    });
+
     // Laden der gespeicherten Daten
     loadData('networth'); // Neu hinzugefügt
     loadData('income');
@@ -468,11 +483,11 @@ function addItem(type, name = '', amount = 0) {
         updateCharts();
     };
 
-    // Ersetzen des "Entfernen" Textes durch ein SVG-Mülleimer-Icon
+    // Erstellen des Remove-Buttons ohne inline onclick
     const removeButton = document.createElement('button');
     removeButton.className = 'remove-button';
+    removeButton.setAttribute('data-tooltip', 'Entfernen');
     removeButton.setAttribute('aria-label', getTranslation('remove'));
-    removeButton.setAttribute('data-tooltip', 'Entfernen'); // Hinzufügen des Tooltip-Attributs
 
     // SVG-Icon für den Mülleimer
     removeButton.innerHTML = `
@@ -481,12 +496,6 @@ function addItem(type, name = '', amount = 0) {
             <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"/>
         </svg>
     `;
-    removeButton.onclick = () => {
-        container.removeChild(itemDiv);
-        saveData(type);
-        calculateTotals();
-        updateCharts();
-    };
 
     itemDiv.appendChild(nameInput);
     itemDiv.appendChild(amountInput);
