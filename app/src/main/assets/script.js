@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Funktion zum Abrufen der Daten mit Namen
 function getDataWithNames(type) {
-    const items = document.querySelectorAll(#${type}-list .item);
+    const items = document.querySelectorAll(`#${type}-list .item`);
     const data = [];
     items.forEach(item => {
         const nameInput = item.querySelector('input[type="text"]');
@@ -378,7 +378,7 @@ function setupInteractivity() {
     function showTooltip(tooltipElement, text, percentage, x, y) {
         tooltipElement.style.left = x + 'px';
         tooltipElement.style.top = y + 'px';
-        tooltipElement.innerText = ${text}: ${percentage}%;
+        tooltipElement.innerText = `${text}: ${percentage}%`;
         tooltipElement.style.opacity = 1;
     }
 
@@ -389,9 +389,9 @@ function setupInteractivity() {
 
     // Füge Event-Listener zu beiden Diagrammen hinzu
     ['income', 'expense'].forEach(type => {
-        const canvasId = ${type}Chart;
+        const canvasId = `${type}Chart`;
         const canvas = document.getElementById(canvasId);
-        const tooltipId = ${type}Tooltip;
+        const tooltipId = `${type}Tooltip`;
         const tooltip = document.getElementById(tooltipId);
 
         // Mouse Events
@@ -454,7 +454,7 @@ function loadData(type) {
             networthInput.value = parseFloat(savedNetworth) || 0;
         }
     } else {
-        const data = localStorage.getItem(${type}Data);
+        const data = localStorage.getItem(`${type}Data`);
         if (data) {
             isLoading = true; // Ladevorgang beginnt
             const items = JSON.parse(data);
@@ -470,7 +470,7 @@ function loadData(type) {
 
 // Funktion zum Hinzufügen eines neuen Items
 function addItem(type, name = '', amount = 0) {
-    const container = document.getElementById(${type}-list);
+    const container = document.getElementById(`${type}-list`);
 
     const itemDiv = document.createElement('div');
     itemDiv.className = 'item';
@@ -514,12 +514,12 @@ function addItem(type, name = '', amount = 0) {
     removeButton.setAttribute('aria-label', getTranslation('remove'));
 
     // SVG-Icon für den Mülleimer
-    removeButton.innerHTML =
+    removeButton.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="#fff">
             <path d="M0 0h24v24H0V0z" fill="none"/>
             <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"/>
         </svg>
-    ;
+    `;
 
     itemDiv.appendChild(nameInput);
     itemDiv.appendChild(amountInput);
@@ -599,7 +599,7 @@ function saveData(type) {
         localStorage.setItem('networthData', networthValue.toFixed(2));
     } else {
         const items = [];
-        const itemElements = document.querySelectorAll(#${type}-list .item);
+        const itemElements = document.querySelectorAll(`#${type}-list .item`);
 
         itemElements.forEach(item => {
             const nameInput = item.querySelector('input[type="text"]');
@@ -610,7 +610,7 @@ function saveData(type) {
             });
         });
 
-        localStorage.setItem(${type}Data, JSON.stringify(items));
+        localStorage.setItem(`${type}Data`, JSON.stringify(items));
     }
 }
 
