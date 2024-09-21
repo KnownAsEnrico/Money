@@ -578,7 +578,7 @@ function calculateTotals() {
     const currentNetworth = parseFloat(currentNetworthInput.value) || 0;
     const networthAfter = currentNetworth + netTotal;
     const networthAfterElement = document.getElementById('networth-after');
-    networthAfterElement.innerText = networthAfter.toFixed(2) + ' €'; // Anpassung für Euro
+    networthAfterElement.innerText = networthAfter.toFixed(2) + ' €';
 
     // Farbe basierend auf dem Wert (nur CSS-Klassen verwenden)
     if (networthAfter < 0) {
@@ -630,3 +630,18 @@ function updateCharts() {
     drawPieChart('incomeChart', getDataWithNames('income'), 'income');
     drawPieChart('expenseChart', getDataWithNames('expense'), 'expense');
 }
+
+// Funktion zum Zeichnen des Diagramms nach Änderungen
+function drawCharts() {
+    updateCharts();
+}
+
+// Initiale Zeichnung der Diagramme
+window.addEventListener('load', () => {
+    drawCharts();
+});
+
+// Funktion zum Zeichnen des Diagramms erneut bei Fenstergröße Änderung
+window.addEventListener('resize', () => {
+    drawCharts();
+});
