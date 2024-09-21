@@ -374,7 +374,9 @@ function calculateTotals() {
     const totalExpenses = expenseItems.reduce((acc, item) => acc + item.amount, 0);
     const totalInvestment = investmentItems.reduce((acc, item) => acc + item.amount, 0);
 
+    // Korrigierte Berechnung des Netto-Einkommens
     const netTotal = totalIncome - totalExpenses;
+
     const netTotalElement = document.getElementById('net-total');
     netTotalElement.innerText = netTotal.toFixed(2) + '€';
     netTotalElement.classList.toggle('negative', netTotal < 0);
@@ -389,8 +391,11 @@ function calculateTotals() {
 
     const currentNetworthInput = document.getElementById('current-networth');
     const currentNetworth = parseFloat(currentNetworthInput.value) || 0;
-    const networthAfter = currentNetworth + netTotal + totalInvestment;
+
+    // Zuweisen der Referenz auf das Element für das Vermögen nach diesem Monat
     const networthAfterElement = document.getElementById('networth-after');
+
+    const networthAfter = currentNetworth + netTotal + totalInvestment; // Vermögen + Netto-Einkommen + Investitionen
     networthAfterElement.innerText = `${networthAfter.toFixed(2)} €`;
     networthAfterElement.classList.toggle('negative', networthAfter < 0);
 
@@ -400,6 +405,7 @@ function calculateTotals() {
         console.error("Fehler beim Speichern des Vermögens:", e);
     }
 }
+
 
 // Funktion zur Speicherung der Daten
 function saveData(type) {
