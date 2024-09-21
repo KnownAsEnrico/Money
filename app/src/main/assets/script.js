@@ -24,9 +24,10 @@ const translations = {
         networth: "Vermögen",
         networth_placeholder: "Aktuelles Vermögen eingeben",
         networth_after: "Vermögen nach diesem Monat:",
+        growth_rate: "Wachstumsrate:", // Neue Übersetzung
         charts: "Diagramme",
         legend: "Legende",
-        investment_label: "Investitionen:"
+        investment_label: "Investiert:"
     },
     en: {
         app_title: "Income and Expenses Tracker",
@@ -53,9 +54,10 @@ const translations = {
         networth: "Networth",
         networth_placeholder: "Enter your current networth",
         networth_after: "Networth after this Month:",
+        growth_rate: "Growth Rate:", // Neue Übersetzung
         charts: "Charts",
         legend: "Legend",
-        investment_label: "Investments:"
+        investment_label: "Invested:"
     },
     zh: {
         app_title: "收入和支出跟踪器",
@@ -82,11 +84,13 @@ const translations = {
         networth: "净资产",
         networth_placeholder: "输入您的当前净资产",
         networth_after: "本月后净资产：",
+        growth_rate: "增长率:", // Neue Übersetzung
         charts: "图表",
         legend: "图例",
-        investment_label: "投资："
+        investment_label: "投了："
     }
 };
+
 
 let isLoading = true;
 
@@ -375,7 +379,7 @@ function calculateTotals() {
     const totalInvestment = investmentItems.reduce((acc, item) => acc + item.amount, 0);
 
     // Korrigierte Berechnung des Netto-Einkommens
-    const netTotal = totalIncome - totalExpenses;
+    const netTotal = totalIncome - totalExpenses - totalInvestment;
 
     const netTotalElement = document.getElementById('net-total');
     netTotalElement.innerText = netTotal.toFixed(2) + '€';
@@ -394,10 +398,21 @@ function calculateTotals() {
 
     // Zuweisen der Referenz auf das Element für das Vermögen nach diesem Monat
     const networthAfterElement = document.getElementById('networth-after');
+    const growthRateElement = document.getElementById('growth-rate'); // Neues Element für Wachstumsrate
 
     const networthAfter = currentNetworth + netTotal + totalInvestment; // Vermögen + Netto-Einkommen + Investitionen
     networthAfterElement.innerText = `${networthAfter.toFixed(2)} €`;
     networthAfterElement.classList.toggle('negative', networthAfter < 0);
+
+    // Berechnung des Wachstums in Prozent
+    let growthRate = 0;
+    if (currentNetworth > 0) {
+        growthRate = ((networthAfter - currentNetworth) / currentNetworth) * 100;
+    }
+
+    // Anzeigen der Wachstumsrate
+    growthRateElement.innerText = `${growthRate.toFixed(2)}%`;
+    growthRateElement.classList.toggle('negative', growthRate < 0);
 
     try {
         localStorage.setItem('networthData', currentNetworth.toFixed(2));
@@ -405,6 +420,7 @@ function calculateTotals() {
         console.error("Fehler beim Speichern des Vermögens:", e);
     }
 }
+
 
 
 // Funktion zur Speicherung der Daten
@@ -478,8 +494,20 @@ function updateCharts() {
     translateLegend(language);
 }
 
-// Funktion zum Zeichnen der Diagramme mit Chart.js
-function drawChart(canvasId, data, type, language) {
+// Funktion zur Generierung von Schattierungen eines Farbtons
+function getShade(hex, factor) {
+    // Entfernen des Hash-Zeichens, falls vorhanden
+    hex = hex.replace('#', '');
+
+    const r = Math.min(255, Math.floor(parseInt(hex.substring(0,2), 16) * factor));
+    const g = Math.min(255, Math.floor(parseInt(hex.substring(2,4), 16) * factor));
+    const b = Math.min(255, Math.floor(parseInt(hex.substring(4,6), 16) * factor));
+
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
+// Funktion zum Zeichnen der Diagramme mit Chart.js und variabler Helligkeit
+function drawChart(canvasId, data, type) {
     const ctx = document.getElementById(canvasId).getContext('2d');
     if (chartInstances[type]) {
         chartInstances[type].destroy();
@@ -496,7 +524,16 @@ function drawChart(canvasId, data, type, language) {
 
     const labels = data.map(item => item.name);
     const amounts = data.map(item => item.amount);
-    const backgroundColors = data.map(item => getCategoryColor(item.category));
+    const baseColor = {
+        income: '#4CAF50',
+        expense: '#F44336',
+        investment: '#2196F3'
+    };
+
+    const backgroundColors = data.map((item, index) => {
+        const shadeFactor = 1 - (index * 0.1); // Jeder Slice wird etwas dunkler
+        return getShade(baseColor[item.category], shadeFactor);
+    });
 
     chartInstances[type] = new Chart(ctx, {
         type: 'pie',
@@ -505,8 +542,7 @@ function drawChart(canvasId, data, type, language) {
             datasets: [{
                 data: amounts,
                 backgroundColor: backgroundColors,
-                borderColor: '#f4f6f8',
-                borderWidth: 2
+                borderWidth: 0 // Entfernt die weißen Trennlinien
             }]
         },
         options: {
@@ -530,6 +566,8 @@ function drawChart(canvasId, data, type, language) {
         }
     });
 }
+
+
 
 // Funktion zur Rückgabe der Daten mit Namen
 function getDataWithNames(type) {
