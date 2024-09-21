@@ -1,12 +1,13 @@
-// Sprachdaten für die Übersetzungen
 const translations = {
     de: {
         app_title: "Einkommen und Ausgaben Tracker",
         language_label: "Sprache:",
         income: "Einkommen",
-        expenses: "Ausgaben",
+        expense: "Ausgaben",
+        investment: "Investition",
         add_income: "Neue Einnahme hinzufügen",
         add_expense: "Neue Ausgabe hinzufügen",
+        add_investment: "Neue Investition hinzufügen",
         net_income: "Netto-Einkommen:",
         remaining_income: "Verbleibendes Einkommen:",
         income_chart: "Einkommen - Diagramm",
@@ -16,20 +17,26 @@ const translations = {
         amount_placeholder_income: "Einkommensbetrag",
         name_placeholder_expense: "Ausgabenquelle",
         amount_placeholder_expense: "Ausgabenbetrag",
+        name_placeholder_investment: "Investitionsquelle",
+        amount_placeholder_investment: "Investitionsbetrag",
         no_data: "Keine Daten verfügbar",
         unnamed: "Unbenannt",
         networth: "Vermögen",
         networth_placeholder: "Aktuelles Vermögen eingeben",
         networth_after: "Vermögen nach diesem Monat:",
-        charts: "Diagramme"
+        charts: "Diagramme",
+        legend: "Legende",
+        investment_label: "Investitionen:"
     },
     en: {
         app_title: "Income and Expenses Tracker",
         language_label: "Language:",
         income: "Income",
-        expenses: "Expenses",
+        expense: "Expenses",
+        investment: "Investment",
         add_income: "Add New Income",
         add_expense: "Add New Expense",
+        add_investment: "Add New Investment",
         net_income: "Net Income:",
         remaining_income: "Remaining Income:",
         income_chart: "Income - Chart",
@@ -39,20 +46,26 @@ const translations = {
         amount_placeholder_income: "Income Amount",
         name_placeholder_expense: "Expense Source",
         amount_placeholder_expense: "Expense Amount",
+        name_placeholder_investment: "Investment Source",
+        amount_placeholder_investment: "Investment Amount",
         no_data: "No data available",
         unnamed: "Unnamed",
         networth: "Networth",
         networth_placeholder: "Enter your current networth",
         networth_after: "Networth after this Month:",
-        charts: "Charts"
+        charts: "Charts",
+        legend: "Legend",
+        investment_label: "Investments:"
     },
     zh: {
         app_title: "收入和支出跟踪器",
         language_label: "语言：",
         income: "收入",
-        expenses: "支出",
+        expense: "支出",
+        investment: "投资",
         add_income: "添加新收入",
         add_expense: "添加新支出",
+        add_investment: "添加新投资",
         net_income: "净收入：",
         remaining_income: "剩余收入：",
         income_chart: "收入 - 图表",
@@ -62,27 +75,44 @@ const translations = {
         amount_placeholder_income: "收入金额",
         name_placeholder_expense: "支出来源",
         amount_placeholder_expense: "支出金额",
+        name_placeholder_investment: "投资来源",
+        amount_placeholder_investment: "投资金额",
         no_data: "暂无数据",
         unnamed: "未命名",
         networth: "净资产",
         networth_placeholder: "输入您的当前净资产",
         networth_after: "本月后净资产：",
-        charts: "图表"
+        charts: "图表",
+        legend: "图例",
+        investment_label: "投资："
     }
 };
 
-// Variable zum Tracking des Ladezustands
 let isLoading = true;
 
-// Datenstruktur zum Speichern der Diagrammsegmente
-let chartData = {
-    income: [],
-    expense: []
+let chartInstances = {
+    income: null,
+    expense: null
 };
 
-// Funktion zum Übersetzen der UI
+// Debounce function to limit the rate at which a function can fire.
+function debounce(func, delay) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+// Funktion zur Rückgabe der Übersetzung basierend auf dem aktuellen Sprachstatus
+function getTranslation(key) {
+    const language = loadLanguage();
+    return (translations[language] && translations[language][key]) ? translations[language][key] : key;
+}
+
+// Funktion zur Übersetzung der UI
 function translateUI(language) {
-    // Übersetze alle Elemente mit data-translate
+    // Übersetzen der Texte mit data-translate Attribut
     document.querySelectorAll('[data-translate]').forEach(element => {
         const key = element.getAttribute('data-translate');
         if (translations[language] && translations[language][key]) {
@@ -90,12 +120,14 @@ function translateUI(language) {
         }
     });
 
-    // Übersetze die Placeholder-Texte für Einnahmen, Ausgaben und Networth
+    // Übersetzen der Platzhalter in Textfeldern
     document.querySelectorAll('input[type="text"]').forEach(input => {
         const parentContainer = input.closest('.list-container');
-        const type = parentContainer.id.includes('income') ? 'income' : parentContainer.id.includes('expense') ? 'expense' : null;
+        const type = parentContainer.id.includes('income') ? 'income' :
+            parentContainer.id.includes('expense') ? 'expense' :
+                parentContainer.id.includes('investment') ? 'investment' : null;
         if (type) {
-            const key = type === 'income' ? 'name_placeholder_income' : 'name_placeholder_expense';
+            const key = `name_placeholder_${type}`;
             if (translations[language] && translations[language][key]) {
                 input.placeholder = translations[language][key];
             }
@@ -111,8 +143,10 @@ function translateUI(language) {
                     input.placeholder = translations[language][key];
                 }
             } else {
-                const type = parentContainer.id.includes('income') ? 'income' : 'expense';
-                const key = type === 'income' ? 'amount_placeholder_income' : 'amount_placeholder_expense';
+                const type = parentContainer.id.includes('income') ? 'income' :
+                    parentContainer.id.includes('expense') ? 'expense' :
+                        parentContainer.id.includes('investment') ? 'investment' : null;
+                const key = `amount_placeholder_${type}`;
                 if (translations[language] && translations[language][key]) {
                     input.placeholder = translations[language][key];
                 }
@@ -120,7 +154,7 @@ function translateUI(language) {
         }
     });
 
-    // Übersetze die aria-labels der Remove-Buttons
+    // Übersetzen der ARIA-Labels der Entfernen-Buttons
     document.querySelectorAll('.remove-button').forEach(button => {
         const key = 'remove';
         if (translations[language] && translations[language][key]) {
@@ -129,43 +163,73 @@ function translateUI(language) {
         }
     });
 
-    // Übersetze die Networth after this Month Titel
-    const networthAfterElements = document.querySelectorAll('[data-translate="networth_after"]');
-    networthAfterElements.forEach(element => {
-        const key = 'networth_after';
+    // Übersetzen der Investitionen-Label
+    document.querySelectorAll('[data-translate="investment_label"]').forEach(element => {
+        const key = 'investment_label';
         if (translations[language] && translations[language][key]) {
             element.innerText = translations[language][key];
         }
     });
 
-    // Übersetze die Diagramme Titel
-    const chartsTitleElements = document.querySelectorAll('[data-translate="charts"]');
-    chartsTitleElements.forEach(element => {
-        const key = 'charts';
-        if (translations[language] && translations[language][key]) {
-            element.innerText = translations[language][key];
-        }
-    });
+    // Übersetzen der Legende
+    translateLegend(language);
+}
 
-    // Aktualisiere die Tooltips dynamisch
-    document.querySelectorAll('.remove-button').forEach(button => {
-        const tooltipText = translations[language]['remove'] || 'Remove';
-        button.setAttribute('data-tooltip', tooltipText);
+// Funktion zur Übersetzung der Legende
+function translateLegend(language) {
+    const categories = ['income', 'expense', 'investment'];
+    const legendContainer = document.getElementById('legend');
+    legendContainer.innerHTML = `<h3 data-translate="legend">${getTranslation('legend')}</h3>`;
+
+    categories.forEach(category => {
+        const legendItem = document.createElement('div');
+        legendItem.className = 'legend-item';
+
+        const colorBox = document.createElement('span');
+        colorBox.className = 'legend-color';
+        colorBox.style.backgroundColor = getCategoryColor(category);
+
+        const label = document.createElement('span');
+        label.setAttribute('data-category', category);
+        label.innerText = getTranslation(category);
+
+        legendItem.appendChild(colorBox);
+        legendItem.appendChild(label);
+        legendContainer.appendChild(legendItem);
     });
 }
 
-// Funktion zur Speicherung der Sprache in localStorage
+// Funktion zur Rückgabe der Farbe basierend auf der Kategorie
+function getCategoryColor(category) {
+    const colors = {
+        income: '#4CAF50',
+        expense: '#F44336',
+        investment: '#2196F3'
+    };
+    return colors[category] || '#000';
+}
+
+// Funktion zur Speicherung der ausgewählten Sprache
 function saveLanguage(language) {
-    localStorage.setItem('selectedLanguage', language);
+    try {
+        localStorage.setItem('selectedLanguage', language);
+    } catch (e) {
+        console.error("Fehler beim Speichern der Sprache:", e);
+    }
 }
 
-// Funktion zum Laden der Sprache aus localStorage
+// Funktion zum Laden der gespeicherten Sprache
 function loadLanguage() {
-    const savedLanguage = localStorage.getItem('selectedLanguage');
-    return savedLanguage ? savedLanguage : 'de'; // Standard ist Deutsch
+    try {
+        const savedLanguage = localStorage.getItem('selectedLanguage');
+        return savedLanguage ? savedLanguage : 'de';
+    } catch (e) {
+        console.error("Fehler beim Laden der Sprache:", e);
+        return 'de';
+    }
 }
 
-// Initialisierung der Sprache beim Laden der Seite
+// Event Listener für DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     const languageSelect = document.getElementById('language-select');
     const currentLanguage = loadLanguage();
@@ -175,11 +239,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event Listener für Sprachwechsel
     languageSelect.addEventListener('change', (e) => {
         const selectedLanguage = e.target.value;
-        translateUI(selectedLanguage);
-        saveLanguage(selectedLanguage);
+        saveLanguage(selectedLanguage); // Sprache zuerst speichern
+        translateUI(selectedLanguage);  // Dann UI übersetzen
     });
 
-    // Event Listener für Remove-Buttons via Event Delegation
+    // Event Listener für Hinzufügen-Buttons
+    document.querySelectorAll('.add-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const type = button.getAttribute('data-type');
+            addItem(type);
+        });
+    });
+
+    // Event Listener für Entfernen-Buttons (Delegation)
     document.querySelector('.container').addEventListener('click', function(event) {
         const removeButton = event.target.closest('.remove-button');
         if (removeButton) {
@@ -187,333 +259,93 @@ document.addEventListener('DOMContentLoaded', () => {
             if (itemDiv) {
                 const listContainer = removeButton.closest('.list-container');
                 if (listContainer) {
-                    const type = listContainer.id.includes('income') ? 'income' : 'expense';
-                    itemDiv.remove();
-                    saveData(type);
-                    calculateTotals();
-                    updateCharts();
-                } else {
-                    console.error('Remove button is not inside a list-container.');
+                    const type = listContainer.id.includes('income') ? 'income' :
+                        listContainer.id.includes('expense') ? 'expense' :
+                            listContainer.id.includes('investment') ? 'investment' : null;
+                    if (type) {
+                        itemDiv.remove();
+                        saveData(type);
+                        calculateTotals();
+                        updateCharts();
+                    }
                 }
             }
         }
     });
 
+    // Event Listener für Vermögen Eingabe
+    document.getElementById('current-networth').addEventListener('input', debounce(updateNetworth, 300));
+
     // Laden der gespeicherten Daten
-    loadData('networth'); // Neu hinzugefügt
+    loadData('networth');
     loadData('income');
     loadData('expense');
+    loadData('investment');
     calculateTotals();
     updateCharts();
-    setupInteractivity();
-    isLoading = false; // Laden abgeschlossen
+    isLoading = false;
 });
 
-// Funktion zum Abrufen der Daten mit Namen
+// Funktion zur Rückgabe der Daten mit Namen
 function getDataWithNames(type) {
     const items = document.querySelectorAll(`#${type}-list .item`);
     const data = [];
     items.forEach(item => {
         const nameInput = item.querySelector('input[type="text"]');
         const amountInput = item.querySelector('input[type="number"]');
+        const language = loadLanguage();
         const name = nameInput.value.trim() || getTranslation('unnamed');
         const amount = parseFloat(amountInput.value) || 0;
         if (amount > 0) {
-            data.push({ name, amount });
+            data.push({
+                name,
+                amount,
+                category: type === 'income' ? 'income' : type === 'investment' ? 'investment' : 'expense'
+            });
         }
     });
     return data;
 }
 
-// Funktion zum Zeichnen des Kreisdiagramms
-function drawPieChart(canvasId, data, type) {
-    const canvas = document.getElementById(canvasId);
-    const ctx = canvas.getContext('2d');
-
-    // Anpassung für hohe Auflösung
-    const devicePixelRatio = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * devicePixelRatio;
-    canvas.height = rect.height * devicePixelRatio;
-    ctx.scale(devicePixelRatio, devicePixelRatio);
-
-    const total = data.reduce((acc, val) => acc + val.amount, 0);
-
-    // Farben für die Segmente
-    const colors = generateColors(data.length, type);
-
-    // Speicher der Segmente mit ihren Winkelbereichen und Prozentanteil
-    const segments = [];
-
-    // Zeichne den Hintergrund
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#f4f6f8';
-    ctx.fillRect(0, 0, rect.width, rect.height);
-
-    // Wenn keine Daten vorhanden sind
-    if (data.length === 0 || total === 0) {
-        ctx.font = '16px Arial';
-        ctx.fillStyle = '#000';
-        ctx.textAlign = 'center';
-        ctx.fillText(getTranslation('no_data'), rect.width / 2, rect.height / 2);
-        chartData[type] = [];
-        return;
-    }
-
-    // Mittelpunkt und Radius
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const radius = Math.min(centerX, centerY) - 20;
-
-    let startAngle = 0;
-
-    data.forEach((item, index) => {
-        const sliceAngle = (item.amount / total) * 2 * Math.PI;
-        const percentage = ((item.amount / total) * 100).toFixed(1);
-
-        // Zeichne das Segment
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
-        ctx.closePath();
-        ctx.fillStyle = colors[index];
-        ctx.fill();
-
-        // Speichere das Segment mit seinen Winkeln, Namen und Prozentanteil
-        segments.push({
-            startAngle: startAngle,
-            endAngle: startAngle + sliceAngle,
-            name: item.name,
-            percentage: percentage
-        });
-
-        startAngle += sliceAngle;
-    });
-
-    // Speichere die Segmentdaten für die Interaktivität
-    chartData[type] = segments;
-}
-
-// Funktion zur Generierung von Farben für die Segmente (unterscheidet zwischen Einkommen und Ausgaben)
-function generateColors(numColors, type) {
-    const colors = [];
-    let baseColors;
-
-    if (type === 'income') {
-        // Farben für Einkommen (grünbasierte Palette)
-        baseColors = [
-            '#4CAF50', // Grün
-            '#81C784', // Hellgrün
-            '#388E3C', // Dunkelgrün
-            '#66BB6A', // Mittelgrün
-            '#A5D6A7', // Pastellgrün
-            '#2E7D32'  // Sehr Dunkelgrün
-        ];
-    } else if (type === 'expense') {
-        // Farben für Ausgaben (rotbasierte Palette)
-        baseColors = [
-            '#F44336', // Rot
-            '#E57373', // Hellrot
-            '#D32F2F', // Dunkelrot
-            '#EF5350', // Mittelrot
-            '#FF8A80', // Pastellrot
-            '#C62828'  // Sehr Dunkelrot
-        ];
-    } else {
-        // Fallback-Farben (blau)
-        baseColors = [
-            '#2196F3',
-            '#64B5F6',
-            '#1976D2',
-            '#42A5F5',
-            '#90CAF9',
-            '#1565C0'
-        ];
-    }
-
-    for (let i = 0; i < numColors; i++) {
-        colors.push(baseColors[i % baseColors.length]);
-    }
-    return colors;
-}
-
-// Event-Handling für Diagramm-Interaktivität
-function setupInteractivity() {
-    // Funktion zur Bestimmung des Segments basierend auf der Position
-    function getSegment(canvas, x, y, type) {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        const devicePixelRatio = window.devicePixelRatio || 1;
-
-        // Korrigiere die Koordinaten basierend auf dem devicePixelRatio
-        const mouseX = (x - rect.left) * scaleX / devicePixelRatio;
-        const mouseY = (y - rect.top) * scaleY / devicePixelRatio;
-
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        const radius = Math.min(centerX, centerY) - 20;
-
-        const dx = mouseX - centerX;
-        const dy = mouseY - centerY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance > radius) {
-            return null;
-        }
-
-        let angle = Math.atan2(dy, dx);
-        if (angle < 0) angle += 2 * Math.PI;
-
-        const segments = chartData[type];
-        for (let segment of segments) {
-            if (angle >= segment.startAngle && angle < segment.endAngle) {
-                return segment;
-            }
-        }
-        return null;
-    }
-
-    // Funktion zur Anzeige des Tooltips
-    function showTooltip(tooltipElement, text, percentage, x, y) {
-        tooltipElement.style.left = x + 'px';
-        tooltipElement.style.top = y + 'px';
-        tooltipElement.innerText = `${text}: ${percentage}%`;
-        tooltipElement.style.opacity = 1;
-    }
-
-    // Funktion zur Verbergung des Tooltips
-    function hideTooltip(tooltipElement) {
-        tooltipElement.style.opacity = 0;
-    }
-
-    // Füge Event-Listener zu beiden Diagrammen hinzu
-    ['income', 'expense'].forEach(type => {
-        const canvasId = `${type}Chart`;
-        const canvas = document.getElementById(canvasId);
-        const tooltipId = `${type}Tooltip`;
-        const tooltip = document.getElementById(tooltipId);
-
-        // Mouse Events
-        canvas.addEventListener('mousemove', function(event) {
-            const nameAndPercentage = getSegment(canvas, event.clientX, event.clientY, type);
-            if (nameAndPercentage) {
-                // Berechne die Position relativ zum Chart-Container
-                const rect = canvas.getBoundingClientRect();
-                const x = event.clientX - rect.left;
-                const y = event.clientY - rect.top;
-                showTooltip(tooltip, nameAndPercentage.name, nameAndPercentage.percentage, x, y);
-            } else {
-                hideTooltip(tooltip);
-            }
-        });
-
-        canvas.addEventListener('mouseout', function() {
-            hideTooltip(tooltip);
-        });
-
-        // Touch Events
-        canvas.addEventListener('touchstart', function(event) {
-            // Kein preventDefault hier, um Scrollen zu erlauben
-        }, { passive: true });
-
-        canvas.addEventListener('touchmove', function(event) {
-            const touch = event.touches[0];
-            const nameAndPercentage = getSegment(canvas, touch.clientX, touch.clientY, type);
-            if (nameAndPercentage) {
-                // Verhindere das Scrollen nur, wenn der Benutzer interagiert
-                event.preventDefault();
-                // Berechne die Position relativ zum Chart-Container
-                const rect = canvas.getBoundingClientRect();
-                const x = touch.clientX - rect.left;
-                const y = touch.clientY - rect.top;
-                showTooltip(tooltip, nameAndPercentage.name, nameAndPercentage.percentage, x, y);
-            } else {
-                hideTooltip(tooltip);
-            }
-        }, { passive: false });
-
-        canvas.addEventListener('touchend', function() {
-            hideTooltip(tooltip);
-        });
-    });
-}
-
-// Funktion zum Übersetzen bestimmter Texte, die dynamisch erstellt werden
-function getTranslation(key) {
-    const language = loadLanguage();
-    return translations[language][key] || key;
-}
-
-// Lädt die gespeicherten Daten aus localStorage
-function loadData(type) {
-    if (type === 'networth') {
-        const networthInput = document.getElementById('current-networth');
-        const savedNetworth = localStorage.getItem('networthData');
-        if (savedNetworth) {
-            networthInput.value = parseFloat(savedNetworth) || 0;
-        }
-    } else {
-        const data = localStorage.getItem(`${type}Data`);
-        if (data) {
-            isLoading = true; // Ladevorgang beginnt
-            const items = JSON.parse(data);
-            items.forEach(item => {
-                addItem(type, item.name, item.amount);
-            });
-            isLoading = false; // Ladevorgang beendet
-        } else {
-            isLoading = false; // Kein Laden erforderlich
-        }
-    }
-}
-
-// Funktion zum Hinzufügen eines neuen Items
+// Funktion zum Hinzufügen eines neuen Eintrags
 function addItem(type, name = '', amount = 0) {
     const container = document.getElementById(`${type}-list`);
+    if (!container) return;
 
     const itemDiv = document.createElement('div');
     itemDiv.className = 'item';
 
     const nameInput = document.createElement('input');
     nameInput.type = 'text';
-    if (type === 'income') {
-        nameInput.placeholder = getTranslation('name_placeholder_income');
-    } else if (type === 'expense') {
-        nameInput.placeholder = getTranslation('name_placeholder_expense');
-    }
+    nameInput.placeholder = getTranslation(`name_placeholder_${type}`);
     nameInput.value = name;
-    nameInput.oninput = () => {
+    nameInput.setAttribute('aria-label', getTranslation(`name_placeholder_${type}`));
+    nameInput.addEventListener('input', debounce(() => {
         if (!isLoading) {
             saveData(type);
+            calculateTotals();
+            updateCharts();
         }
-        calculateTotals();
-        updateCharts();
-    };
+    }, 300));
 
     const amountInput = document.createElement('input');
     amountInput.type = 'number';
-    if (type === 'income') {
-        amountInput.placeholder = getTranslation('amount_placeholder_income');
-    } else if (type === 'expense') {
-        amountInput.placeholder = getTranslation('amount_placeholder_expense');
-    }
+    amountInput.placeholder = getTranslation(`amount_placeholder_${type}`);
     amountInput.value = amount;
-    amountInput.oninput = () => {
+    amountInput.setAttribute('aria-label', getTranslation(`amount_placeholder_${type}`));
+    amountInput.min = "0";
+    amountInput.addEventListener('input', debounce(() => {
         if (!isLoading) {
             saveData(type);
+            calculateTotals();
+            updateCharts();
         }
-        calculateTotals();
-        updateCharts();
-    };
+    }, 300));
 
-    // Erstellen des Remove-Buttons ohne inline onclick
     const removeButton = document.createElement('button');
     removeButton.className = 'remove-button';
-    removeButton.setAttribute('data-tooltip', getTranslation('remove'));
     removeButton.setAttribute('aria-label', getTranslation('remove'));
-
-    // SVG-Icon für den Mülleimer
+    removeButton.setAttribute('data-tooltip', getTranslation('remove'));
     removeButton.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="#fff">
             <path d="M0 0h24v24H0V0z" fill="none"/>
@@ -527,121 +359,198 @@ function addItem(type, name = '', amount = 0) {
     container.appendChild(itemDiv);
 
     calculateTotals();
-    if (!isLoading) {
-        saveData(type);
-    }
+    if (!isLoading) saveData(type);
     updateCharts();
 }
 
-// Funktion zur Berechnung der Gesamteinnahmen, -ausgaben, Netto-Einkommen und Networth after this Month
+// Funktion zur Berechnung der Gesamtsummen
 function calculateTotals() {
-    const incomeItems = document.querySelectorAll('#income-list .item');
-    const expenseItems = document.querySelectorAll('#expense-list .item');
+    const language = loadLanguage();
+    const incomeItems = getDataWithNames('income');
+    const expenseItems = getDataWithNames('expense');
+    const investmentItems = getDataWithNames('investment');
 
-    let totalIncome = 0;
-    incomeItems.forEach(item => {
-        const amountInput = item.querySelector('input[type="number"]');
-        totalIncome += parseFloat(amountInput.value) || 0;
-    });
-
-    let totalExpenses = 0;
-    expenseItems.forEach(item => {
-        const amountInput = item.querySelector('input[type="number"]');
-        totalExpenses += parseFloat(amountInput.value) || 0;
-    });
+    const totalIncome = incomeItems.reduce((acc, item) => acc + item.amount, 0);
+    const totalExpenses = expenseItems.reduce((acc, item) => acc + item.amount, 0);
+    const totalInvestment = investmentItems.reduce((acc, item) => acc + item.amount, 0);
 
     const netTotal = totalIncome - totalExpenses;
     const netTotalElement = document.getElementById('net-total');
-    netTotalElement.innerText = netTotal.toFixed(2);
+    netTotalElement.innerText = netTotal.toFixed(2) + '€';
+    netTotalElement.classList.toggle('negative', netTotal < 0);
 
-    // Hinzufügen oder Entfernen der Klasse 'negative' für Netto-Einkommen
-    if (netTotal < 0) {
-        netTotalElement.classList.add('negative');
-    } else {
-        netTotalElement.classList.remove('negative');
-    }
+    const investmentElement = document.getElementById('investment-amount');
+    investmentElement.innerText = `${totalInvestment.toFixed(2)} €`;
 
-    // Prozentzahl berechnen und anzeigen
     const percentage = totalIncome ? (netTotal / totalIncome) * 100 : 0;
     const percentageElement = document.getElementById('percentage');
-    percentageElement.innerText = percentage.toFixed(2);
+    percentageElement.innerText = `${percentage.toFixed(2)}%`;
+    percentageElement.classList.toggle('negative', percentage < 0);
 
-    // Hinzufügen oder Entfernen der Klasse 'negative' für die Prozentzahl
-    if (percentage < 0) {
-        percentageElement.classList.add('negative');
-    } else {
-        percentageElement.classList.remove('negative');
-    }
-
-    // Berechnung für Networth after this Month
     const currentNetworthInput = document.getElementById('current-networth');
     const currentNetworth = parseFloat(currentNetworthInput.value) || 0;
-    const networthAfter = currentNetworth + netTotal;
+    const networthAfter = currentNetworth + netTotal + totalInvestment;
     const networthAfterElement = document.getElementById('networth-after');
-    networthAfterElement.innerText = networthAfter.toFixed(2) + ' €';
+    networthAfterElement.innerText = `${networthAfter.toFixed(2)} €`;
+    networthAfterElement.classList.toggle('negative', networthAfter < 0);
 
-    // Farbe basierend auf dem Wert (nur CSS-Klassen verwenden)
-    if (networthAfter < 0) {
-        networthAfterElement.classList.add('negative');
-    } else {
-        networthAfterElement.classList.remove('negative');
+    try {
+        localStorage.setItem('networthData', currentNetworth.toFixed(2));
+    } catch (e) {
+        console.error("Fehler beim Speichern des Vermögens:", e);
     }
-
-    // Speichere das aktuelle Networth in localStorage
-    localStorage.setItem('networthData', currentNetworth.toFixed(2));
 }
 
-// Funktion zum Speichern der Daten in localStorage
+// Funktion zur Speicherung der Daten
 function saveData(type) {
-    if (type === 'networth') {
-        const networthInput = document.getElementById('current-networth');
-        const networthValue = parseFloat(networthInput.value) || 0;
-        localStorage.setItem('networthData', networthValue.toFixed(2));
-    } else {
-        const items = [];
-        const itemElements = document.querySelectorAll(`#${type}-list .item`);
-
-        itemElements.forEach(item => {
-            const nameInput = item.querySelector('input[type="text"]');
-            const amountInput = item.querySelector('input[type="number"]');
-            items.push({
-                name: nameInput.value,
-                amount: amountInput.value
-            });
-        });
-
-        localStorage.setItem(`${type}Data`, JSON.stringify(items));
+    try {
+        if (type === 'networth') {
+            const networthInput = document.getElementById('current-networth');
+            if (networthInput) {
+                const networthValue = parseFloat(networthInput.value) || 0;
+                localStorage.setItem('networthData', networthValue.toFixed(2));
+            }
+        } else {
+            const items = Array.from(document.querySelectorAll(`#${type}-list .item`)).map(item => ({
+                name: item.querySelector('input[type="text"]').value,
+                amount: item.querySelector('input[type="number"]').value
+            }));
+            localStorage.setItem(`${type}Data`, JSON.stringify(items));
+        }
+    } catch (e) {
+        console.error(`Fehler beim Speichern der Daten für ${type}:`, e);
     }
 }
 
-// Funktion zur Aktualisierung des Networth (wird beim Input ausgelöst)
+// Funktion zum Laden der Daten
+function loadData(type) {
+    try {
+        if (type === 'networth') {
+            const networthInput = document.getElementById('current-networth');
+            const savedNetworth = localStorage.getItem('networthData');
+            if (savedNetworth && networthInput) {
+                networthInput.value = parseFloat(savedNetworth) || 0;
+            }
+        } else {
+            const data = localStorage.getItem(`${type}Data`);
+            if (data) {
+                JSON.parse(data).forEach(item => addItem(type, item.name, item.amount));
+            }
+        }
+    } catch (e) {
+        console.error(`Fehler beim Laden der Daten für ${type}:`, e);
+    }
+}
+
+// Funktion zur Aktualisierung des Vermögens
 function updateNetworth() {
     if (!isLoading) {
         calculateTotals();
-        // Speichere das aktuelle Networth sofort
         const networthInput = document.getElementById('current-networth');
-        const networthValue = parseFloat(networthInput.value) || 0;
-        localStorage.setItem('networthData', networthValue.toFixed(2));
+        if (networthInput) {
+            const networthValue = parseFloat(networthInput.value) || 0;
+            try {
+                localStorage.setItem('networthData', networthValue.toFixed(2));
+            } catch (e) {
+                console.error("Fehler beim Speichern des Vermögens:", e);
+            }
+        }
     }
 }
 
-// Funktion zum Aktualisieren der Diagramme
+// Funktion zur Aktualisierung der Diagramme
 function updateCharts() {
-    drawPieChart('incomeChart', getDataWithNames('income'), 'income');
-    drawPieChart('expenseChart', getDataWithNames('expense'), 'expense');
+    const language = loadLanguage();
+    const incomeData = getDataWithNames('income').map(item => ({ ...item }));
+    const expenseData = getDataWithNames('expense').map(item => ({ ...item }));
+    const investmentData = getDataWithNames('investment').map(item => ({ ...item }));
+
+    const combinedExpenseData = expenseData.concat(investmentData);
+
+    drawChart('incomeChart', incomeData, 'income', language);
+    drawChart('expenseChart', combinedExpenseData, 'expense', language);
+    translateLegend(language);
 }
 
-// Funktion zum Zeichnen des Diagramms nach Änderungen
+// Funktion zum Zeichnen der Diagramme mit Chart.js
+function drawChart(canvasId, data, type, language) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    if (chartInstances[type]) {
+        chartInstances[type].destroy();
+    }
+
+    if (data.length === 0) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.font = '16px Arial';
+        ctx.fillStyle = '#000';
+        ctx.textAlign = 'center';
+        ctx.fillText(getTranslation('no_data'), ctx.canvas.width / 2, ctx.canvas.height / 2);
+        return;
+    }
+
+    const labels = data.map(item => item.name);
+    const amounts = data.map(item => item.amount);
+    const backgroundColors = data.map(item => getCategoryColor(item.category));
+
+    chartInstances[type] = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: amounts,
+                backgroundColor: backgroundColors,
+                borderColor: '#f4f6f8',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = total ? ((value / total) * 100).toFixed(1) : 0;
+                            return `${label}: ${percentage}%`;
+                        }
+                    }
+                },
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+// Funktion zur Rückgabe der Daten mit Namen
+function getDataWithNames(type) {
+    const items = document.querySelectorAll(`#${type}-list .item`);
+    const data = [];
+    items.forEach(item => {
+        const nameInput = item.querySelector('input[type="text"]');
+        const amountInput = item.querySelector('input[type="number"]');
+        const language = loadLanguage();
+        const name = nameInput.value.trim() || getTranslation('unnamed');
+        const amount = parseFloat(amountInput.value) || 0;
+        if (amount > 0) {
+            data.push({
+                name,
+                amount,
+                category: type === 'income' ? 'income' : type === 'investment' ? 'investment' : 'expense'
+            });
+        }
+    });
+    return data;
+}
+
+// Funktion zur Initialisierung der Diagramme
 function drawCharts() {
     updateCharts();
 }
 
-// Initiale Zeichnung der Diagramme
-window.addEventListener('load', () => {
-    drawCharts();
-});
-
-// Funktion zum Zeichnen des Diagramms erneut bei Fenstergröße Änderung
-window.addEventListener('resize', () => {
-    drawCharts();
-});
+// Event Listener für Fensterladen und -größenänderung
+window.addEventListener('load', drawCharts);
+window.addEventListener('resize', drawCharts);

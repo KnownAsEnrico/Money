@@ -1,4 +1,4 @@
-/* Allgemeine Stile */
+/* Grundlegende Stile */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
@@ -18,7 +18,6 @@ header {
     top: 0;
     z-index: 1000;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    flex-direction: column;
 }
 
 h1 {
@@ -36,7 +35,6 @@ h1 {
     font-size: 1em;
 }
 
-/* Entferne den kleinen Pfeil vom Sprachselector */
 .language-toggle select {
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -58,7 +56,6 @@ h1 {
     background-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Container-Stile */
 .container {
     display: grid;
     grid-template-columns: 1fr;
@@ -66,7 +63,7 @@ h1 {
     margin: 20px;
 }
 
-/* Card-Stile für Vermögen-Karten und Diagramme */
+/* Karten-Stile */
 .card {
     background-color: white;
     border-radius: 15px;
@@ -134,7 +131,7 @@ h1 {
     color: #f44336;
 }
 
-/* Diagramme */
+/* Diagramme-Stile */
 .charts-body {
     display: flex;
     flex-wrap: wrap;
@@ -161,14 +158,6 @@ h1 {
     border-radius: 12px;
 }
 
-/* Für kleinere Bildschirme - Diagramme übereinander anzeigen */
-@media (max-width: 768px) {
-    .chart-wrapper {
-        width: 100%;
-    }
-}
-
-/* Tooltip-Stil */
 .tooltip {
     position: absolute;
     background-color: rgba(0, 0, 0, 0.8);
@@ -186,7 +175,7 @@ h1 {
     left: 50%;
 }
 
-/* Styling für Listen-Container (Einkommen und Ausgaben) */
+/* Listen-Stile */
 .list-container {
     background-color: white;
     border-radius: 15px;
@@ -206,7 +195,6 @@ h1 {
     font-size: 1.6em;
 }
 
-/* Styling für einzelne Items */
 .item {
     display: flex;
     align-items: center;
@@ -233,7 +221,6 @@ h1 {
     outline: none;
 }
 
-/* Styling für Entfernen-Buttons mit verbessertem Design */
 .item .remove-button {
     background-color: #f44336;
     border: none;
@@ -259,7 +246,7 @@ h1 {
     transform: scale(1.1);
 }
 
-/* Styling für Hinzufügen-Buttons */
+/* Hinzufügen-Button */
 .add-button {
     background-color: #4CAF50;
     color: white;
@@ -280,7 +267,6 @@ h1 {
     background-color: #45a049;
 }
 
-/* Spezifisches Styling für Ausgaben-Hinzufügen-Button */
 #expense-container .add-button {
     background-color: #F44336;
 }
@@ -289,7 +275,15 @@ h1 {
     background-color: #e53935;
 }
 
-/* Styling für Sum-Block Elemente */
+#investment-container .add-button {
+    background-color: #2196F3;
+}
+
+#investment-container .add-button:hover {
+    background-color: #1e88e5;
+}
+
+/* Zusammenfassung */
 .sum-block {
     background-color: white;
     border-radius: 15px;
@@ -297,6 +291,9 @@ h1 {
     box-sizing: border-box;
     box-shadow: 0 6px 12px rgba(0,0,0,0.1);
     transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .sum-block:hover {
@@ -319,21 +316,51 @@ h1 {
     color: #f44336;
 }
 
-/* Sicherstellen, dass die Vermögen-Karte immer ganz oben und mit voller Breite ist */
-.networth-card {
-    grid-column: 1 / -1;
-    max-width: 100%;
-    margin: 0 0 20px 0;
+/* Legende */
+.legend {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    background-color: #f9f9f9;
+    padding: 10px 15px;
+    border-radius: 10px;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+}
+
+.legend h3 {
+    margin-bottom: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin: 0 15px 10px 15px;
+}
+
+.legend-color {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    margin-right: 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.legend-item span {
+    font-size: 1em;
 }
 
 /* Responsive Design */
+
+/* Desktop-Ansicht */
 @media (min-width: 769px) {
     .container {
-        grid-template-columns: 1fr 1fr 1fr;
-    }
-
-    .list-container, .charts-card, .sum-block, .networth-after-card {
-        max-width: 100%;
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .charts-body {
@@ -343,37 +370,81 @@ h1 {
     .chart-wrapper {
         width: 48%;
     }
+
+    .legend {
+        flex-direction: row;
+    }
+
+    .legend-item {
+        margin: 0 15px 10px 15px;
+    }
 }
 
-@media (max-width: 768px) {
+/* Tablet-Ansicht */
+@media (min-width: 481px) and (max-width: 768px) {
+    .container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .charts-body {
+        flex-direction: row;
+    }
+
+    .chart-wrapper {
+        width: 48%;
+    }
+
+    .legend {
+        flex-direction: row;
+    }
+
+    .legend-item {
+        margin: 0 15px 10px 15px;
+    }
+}
+
+/* Mobile-Ansicht */
+@media (max-width: 480px) {
     .container {
         grid-template-columns: 1fr;
     }
 
     .charts-body {
         flex-direction: column;
+        align-items: center;
     }
 
     .chart-wrapper {
         width: 100%;
     }
-}
 
-@media (max-width: 480px) {
-    body {
-        font-size: 16px;
+    .legend {
+        flex-direction: column;
+        align-items: center;
     }
 
-    .item input[type="text"],
-    .item input[type="number"],
-    .add-button,
-    .item .remove-button,
-    #current-networth {
+    .legend-item {
+        margin: 5px 0;
+    }
+
+    .tooltip {
+        font-size: 12px;
+    }
+
+    .sum-block {
+        padding: 15px 20px;
+    }
+
+    .list-container {
+        padding: 20px 25px;
+    }
+
+    .chart-wrapper h3 {
         font-size: 1em;
     }
 
     .sum-block p {
-        font-size: 1.1em;
+        font-size: 1em;
     }
 
     .card-header h2 {
@@ -384,16 +455,8 @@ h1 {
         font-size: 1.2em;
     }
 
-    .networth-after-card .card-body span {
+    .networth-after-card .card-body span,
+    .investment-container .card-body span {
         font-size: 1.4em;
-    }
-
-    .charts-body {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .chart-wrapper {
-        width: 100%;
     }
 }

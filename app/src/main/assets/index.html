@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <title data-translate="app_title">Einkommen und Ausgaben Tracker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Link zur CSS-Datei -->
     <link rel="stylesheet" href="styles.css">
     <!-- Font Awesome für Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js für Diagramme -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -15,7 +16,7 @@
     <h1 data-translate="app_title">Einkommen und Ausgaben Tracker</h1>
     <div class="language-toggle">
         <label for="language-select" data-translate="language_label">Sprache:</label>
-        <select id="language-select">
+        <select id="language-select" aria-label="Sprachauswahl">
             <option value="de">🇩🇪 Deutsch</option>
             <option value="en">🇬🇧 English</option>
             <option value="zh">🇨🇳 中文</option>
@@ -24,70 +25,71 @@
 </header>
 
 <div class="container">
-    <!-- Vermögen Eingabe (immer oben) -->
+    <!-- Vermögen Eingabe -->
     <div class="card networth-card" id="networth-container">
         <div class="card-header">
-            <i class="fas fa-wallet"></i>
+            <i class="fas fa-wallet" aria-hidden="true"></i>
             <h2 data-translate="networth">Vermögen</h2>
         </div>
         <div class="card-body">
-            <input type="number" id="current-networth" placeholder="Aktuelles Vermögen eingeben" oninput="updateNetworth()">
+            <input type="number" id="current-networth" placeholder="Aktuelles Vermögen eingeben" aria-label="Aktuelles Vermögen eingeben">
         </div>
     </div>
 
     <!-- Einkommen Liste -->
     <div class="list-container" id="income-container">
         <h2 data-translate="income">Einkommen</h2>
-        <div id="income-list">
-            <!-- Einkommens-Einträge werden hier dynamisch hinzugefügt -->
-        </div>
-        <button class="add-button" onclick="addItem('income')" data-translate="add_income">Neue Einnahme hinzufügen</button>
+        <div id="income-list"></div>
+        <button class="add-button" data-type="income" data-translate="add_income" aria-label="Neue Einnahme hinzufügen">Neue Einnahme hinzufügen</button>
     </div>
 
     <!-- Ausgaben Liste -->
     <div class="list-container" id="expense-container">
-        <h2 data-translate="expenses">Ausgaben</h2>
-        <div id="expense-list">
-            <!-- Ausgaben-Einträge werden hier dynamisch hinzugefügt -->
-        </div>
-        <button class="add-button" onclick="addItem('expense')" data-translate="add_expense">Neue Ausgabe hinzufügen</button>
+        <h2 data-translate="expense">Ausgaben</h2>
+        <div id="expense-list"></div>
+        <button class="add-button" data-type="expense" data-translate="add_expense" aria-label="Neue Ausgabe hinzufügen">Neue Ausgabe hinzufügen</button>
     </div>
 
-    <!-- Diagramme Bereich in zwei separaten Karten -->
+    <!-- Investitionen Liste -->
+    <div class="list-container" id="investment-container">
+        <h2 data-translate="investment">Investition</h2>
+        <div id="investment-list"></div>
+        <button class="add-button" data-type="investment" data-translate="add_investment" aria-label="Neue Investition hinzufügen">Neue Investition hinzufügen</button>
+    </div>
+
+    <!-- Diagramme -->
     <div class="card charts-card" id="charts-container">
         <div class="card-header">
-            <i class="fas fa-chart-pie"></i>
+            <i class="fas fa-chart-pie" aria-hidden="true"></i>
             <h2 data-translate="charts">Diagramme</h2>
         </div>
         <div class="charts-body">
-            <!-- Einkommen Diagramm -->
             <div class="chart-wrapper">
                 <h3 data-translate="income_chart">Einkommen - Diagramm</h3>
-                <canvas id="incomeChart" class="chart"></canvas>
-                <!-- Tooltip für Einkommen Diagramm -->
+                <canvas id="incomeChart" class="chart" aria-label="Einkommen Diagramm" role="img"></canvas>
                 <div class="tooltip" id="incomeTooltip"></div>
             </div>
 
-            <!-- Ausgaben Diagramm -->
             <div class="chart-wrapper">
                 <h3 data-translate="expense_chart">Ausgaben - Diagramm</h3>
-                <canvas id="expenseChart" class="chart"></canvas>
-                <!-- Tooltip für Ausgaben Diagramm -->
+                <canvas id="expenseChart" class="chart" aria-label="Ausgaben Diagramm" role="img"></canvas>
                 <div class="tooltip" id="expenseTooltip"></div>
             </div>
         </div>
+        <div class="legend" id="legend" aria-label="Legende"></div>
     </div>
 
-    <!-- Summen Bereich -->
+    <!-- Zusammenfassung -->
     <div class="sum-block">
-        <p><span data-translate="net_income">Netto-Einkommen:</span> <span id="net-total">0.00</span> €</p>
-        <p><span data-translate="remaining_income">Verbleibendes Einkommen:</span> <span id="percentage">0.00</span>%</p>
+        <p><span data-translate="net_income">Netto-Einkommen:</span> <span id="net-total">0.00€</span></p>
+        <p><span data-translate="investment_label">Investitionen:</span> <span id="investment-amount">0.00€</span></p>
+        <p><span data-translate="remaining_income">Verbleibendes Einkommen:</span> <span id="percentage">0.00%</span></p>
     </div>
 
     <!-- Vermögen nach diesem Monat -->
     <div class="card networth-after-card" id="networth-after-container">
         <div class="card-header">
-            <i class="fas fa-chart-line"></i>
+            <i class="fas fa-chart-line" aria-hidden="true"></i>
             <h2 data-translate="networth_after">Vermögen nach diesem Monat</h2>
         </div>
         <div class="card-body">
@@ -96,7 +98,6 @@
     </div>
 </div>
 
-<!-- Link zur JavaScript-Datei -->
 <script src="script.js"></script>
 </body>
 </html>
