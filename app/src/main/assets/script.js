@@ -400,8 +400,8 @@ function setupInteractivity() {
             if (nameAndPercentage) {
                 // Berechne die Position relativ zum Chart-Container
                 const rect = canvas.getBoundingClientRect();
-                const x = event.clientX - rect.left + 10;
-                const y = event.clientY - rect.top + 10;
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
                 showTooltip(tooltip, nameAndPercentage.name, nameAndPercentage.percentage, x, y);
             } else {
                 hideTooltip(tooltip);
@@ -425,8 +425,8 @@ function setupInteractivity() {
                 event.preventDefault();
                 // Berechne die Position relativ zum Chart-Container
                 const rect = canvas.getBoundingClientRect();
-                const x = touch.clientX - rect.left + 10;
-                const y = touch.clientY - rect.top + 10;
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
                 showTooltip(tooltip, nameAndPercentage.name, nameAndPercentage.percentage, x, y);
             } else {
                 hideTooltip(tooltip);

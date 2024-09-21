@@ -138,6 +138,7 @@ h1 {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
+    position: relative;
 }
 
 .chart-wrapper {
@@ -179,6 +180,9 @@ h1 {
     font-size: 14px;
     z-index: 10;
     white-space: nowrap;
+    transform: translate(-50%, -100%);
+    top: 0;
+    left: 50%;
 }
 
 /* Styling für Listen-Container (Einkommen und Ausgaben) */
@@ -314,22 +318,17 @@ h1 {
     color: #f44336;
 }
 
-/* Sicherstellen, dass die Vermögen-Karte immer ganz oben und mit gleicher Breite ist */
+/* Sicherstellen, dass die Vermögen-Karte immer ganz oben und mit voller Breite ist */
 .networth-card {
     grid-column: 1 / -1;
-    max-width: 600px;
-    margin: 0 auto 20px auto;
+    max-width: 100%;
+    margin: 0 0 20px 0;
 }
 
 /* Responsive Design */
 @media (min-width: 769px) {
     .container {
         grid-template-columns: 1fr 1fr 1fr;
-    }
-
-    .networth-card {
-        grid-column: 1 / -1;
-        max-width: 100%;
     }
 
     .list-container, .charts-card, .sum-block, .networth-after-card {
