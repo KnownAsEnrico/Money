@@ -2,105 +2,96 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title data-translate="app_title">Einkommen und Ausgaben Tracker</title>
+    <title>2FA Manager</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Einbindung von Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" crossorigin href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+
+    <!-- Einbindung von Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Einbindung von html5-qrcode -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <!-- Einbindung von otplib für TOTP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/otplib/12.0.1/otplib.umd.min.js"></script>
+
+    <!-- Verlinkung der CSS-Datei -->
     <link rel="stylesheet" href="styles.css">
-    <!-- Font Awesome für Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js für Diagramme -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-<header>
-    <h1 data-translate="app_title">Einkommen und Ausgaben Tracker</h1>
-    <div class="language-toggle">
-        <label for="language-select" data-translate="language_label">Sprache:</label>
-        <select id="language-select" aria-label="Sprachauswahl">
-            <option value="de">🇩🇪 Deutsch</option>
-            <option value="en">🇬🇧 English</option>
-            <option value="zh">🇨🇳 中文</option>
-        </select>
-    </div>
-</header>
+    <!-- Header mit Sidebar-Button und Titel -->
+    <header>
+        <button id="sidebarBtn" class="icon-button"><span class="material-icons">menu</span></button>
+        <h1>2FA</h1>
+    </header>
 
-<div class="container">
-    <!-- Vermögen Eingabe -->
-    <div class="card networth-card" id="networth-container">
-        <div class="card-header">
-            <i class="fas fa-wallet" aria-hidden="true"></i>
-            <h2 data-translate="networth">Vermögen</h2>
-        </div>
-        <div class="card-body">
-            <input type="number" id="current-networth" placeholder="Aktuelles Vermögen eingeben" aria-label="Aktuelles Vermögen eingeben">
-        </div>
-    </div>
+    <!-- Sidebar-Menü -->
+    <nav id="sidebarMenu" class="hidden">
+        <ul>
+            <li id="exportBtn"><span class="material-icons">download</span> Exportieren</li>
+            <li id="infoBtn"><span class="material-icons">info</span> Infos zum Ersteller</li>
+        </ul>
+    </nav>
 
-    <!-- Einkommen Liste -->
-    <div class="list-container" id="income-container">
-        <h2 data-translate="income">Einkommen</h2>
-        <div id="income-list"></div>
-        <button class="add-button" data-type="income" data-translate="add_income" aria-label="Neue Einnahme hinzufügen">Neue Einnahme hinzufügen</button>
-    </div>
+    <!-- Hauptinhalt -->
+    <main>
+        <!-- Tabelle zur Anzeige der Codes -->
+        <table id="codeTable">
+            <thead>
+                <tr>
+                    <th>Dienst</th>
+                    <th>2FA Code</th>
+                    <th>Aktionen</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Einträge werden hier hinzugefügt -->
+            </tbody>
+        </table>
+    </main>
 
-    <!-- Ausgaben Liste -->
-    <div class="list-container" id="expense-container">
-        <h2 data-translate="expense">Ausgaben</h2>
-        <div id="expense-list"></div>
-        <button class="add-button" data-type="expense" data-translate="add_expense" aria-label="Neue Ausgabe hinzufügen">Neue Ausgabe hinzufügen</button>
-    </div>
+    <!-- Plus-Button unten rechts -->
+    <button id="addBtn" class="floating-button"><span class="material-icons">add</span></button>
 
-    <!-- Investitionen Liste -->
-    <div class="list-container" id="investment-container">
-        <h2 data-translate="investment">Investition</h2>
-        <div id="investment-list"></div>
-        <button class="add-button" data-type="investment" data-translate="add_investment" aria-label="Neue Investition hinzufügen">Neue Investition hinzufügen</button>
+    <!-- Menü zum Hinzufügen -->
+    <div id="addMenu" class="hidden">
+        <button id="scanQrBtn"><span class="material-icons">qr_code_scanner</span> QR Code scannen</button>
+        <button id="manualEntryBtn"><span class="material-icons">keyboard</span> Manuell eingeben</button>
     </div>
 
-    <!-- Diagramme -->
-    <div class="card charts-card" id="charts-container">
-        <div class="card-header">
-            <i class="fas fa-chart-pie" aria-hidden="true"></i>
-            <h2 data-translate="charts">Diagramme</h2>
-        </div>
-        <div class="charts-body">
-            <div class="chart-wrapper">
-                <h3 data-translate="income_chart">Einkommen - Diagramm</h3>
-                <canvas id="incomeChart" class="chart" aria-label="Einkommen Diagramm" role="img"></canvas>
-                <div class="tooltip" id="incomeTooltip"></div>
-            </div>
-
-            <div class="chart-wrapper">
-                <h3 data-translate="expense_chart">Ausgaben - Diagramm</h3>
-                <canvas id="expenseChart" class="chart" aria-label="Ausgaben Diagramm" role="img"></canvas>
-                <div class="tooltip" id="expenseTooltip"></div>
-            </div>
-        </div>
-        <div class="legend" id="legend" aria-label="Legende"></div>
-    </div>
-
-    <!-- Zusammenfassung -->
-    <div class="sum-block">
-        <p><span data-translate="net_income">Netto-Einkommen:</span> <span id="net-total">0.00€</span></p>
-        <p><span data-translate="remaining_income">Verbleibendes Einkommen:</span> <span id="percentage">0.00%</span></p>
-        <p><span data-translate="investment_label">Investiert:</span> <span id="investment-amount">0.00€</span></p>
-    </div>
-
-    <!-- Vermögen nach diesem Monat -->
-    <div class="card networth-after-card" id="networth-after-container">
-        <div class="card-header">
-            <i class="fas fa-chart-line" aria-hidden="true"></i>
-            <h2 data-translate="networth_after">Vermögen nach diesem Monat</h2>
-        </div>
-        <div class="card-body">
-            <span id="networth-after">0.00 €</span>
-            <!-- Neue Zeile für die Wachstumsrate -->
-            <p><span data-translate="growth_rate">Wachstumsrate:</span> <span id="growth-rate">0.00%</span></p>
+    <!-- Modal für manuelle Eingabe -->
+    <div id="manualEntryModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Manuelle Eingabe</h2>
+            <form id="manualEntryForm">
+                <input type="text" id="service" placeholder="Dienstname" required>
+                <input type="text" id="secret" placeholder="Geheimer Schlüssel" required>
+                <button type="submit">Hinzufügen</button>
+            </form>
         </div>
     </div>
 
-</div>
+    <!-- Modal für QR-Code-Scanner -->
+    <div id="qrScannerModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>QR Code scannen</h2>
+            <div id="qr-reader" style="width: 300px; margin: auto;"></div>
+        </div>
+    </div>
 
-<script src="script.js"></script>
+    <!-- Modal für Infos zum Ersteller -->
+    <div id="infoModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Infos zum Ersteller</h2>
+            <p>Diese Anwendung wurde erstellt von [Ihr Name].</p>
+        </div>
+    </div>
+
+    <!-- Skript -->
+    <script src="app.js"></script>
 </body>
 </html>

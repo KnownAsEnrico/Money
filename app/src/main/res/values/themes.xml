@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Basisthema der Anwendung für den Light Mode -->
-    <style name="Theme.Money" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="Theme.twoauth" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Farbanpassungen -->
         <item name="colorPrimary">@color/primaryColor</item>
         <item name="colorPrimaryDark">@color/primaryDarkColor</item>

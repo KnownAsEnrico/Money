@@ -4,15 +4,15 @@ plugins {
 }
 
 android {
-    namespace = "com.zhan.money"
+    namespace = "com.zhan.twoauth"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.zhan.money"
+        applicationId = "com.zhan.twoauth"
         minSdk = 31
         targetSdk = 35 // Updated from 33 to 35
         versionCode = 1
-        versionName = "1.5.1"
+        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
