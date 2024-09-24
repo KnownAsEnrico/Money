@@ -10,7 +10,7 @@
         android:icon="@drawable/ic_launcher_vector"
         android:roundIcon="@drawable/ic_launcher_vector"
         android:supportsRtl="true"
-        android:theme="@style/Theme.twoauth">
+        android:theme="@style/Theme.Money">
 
         <!-- Hauptaktivität -->
         <activity

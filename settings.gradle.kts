@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "2Auth"
+rootProject.name = "Money"
 include(":app")
  
